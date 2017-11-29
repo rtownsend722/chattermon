@@ -75,10 +75,10 @@
   "main": ".eslintrc.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tcparker976/greenfield-project.git"
+    "url": "git+https://github.com/goplanetx/chattermon.git"
   },
   "bugs": {
-    "url": "https://github.com/tcparker976/greenfield-project/issues"
+    "url": "https://github.com/goplanetx/chattermon/issues"
   },
-  "homepage": "https://github.com/tcparker976/greenfield-project#readme"
+  "homepage": "https://github.com/goplanetx/chattermon#readme"
 }
