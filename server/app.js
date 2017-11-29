@@ -12,6 +12,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport'),
  FacebookStrategy = require('passport-facebook').Strategy;
+const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation } = require('../game-logic.js');
@@ -176,9 +177,9 @@ io.on('connection', (socket) => {
 /*===NOT INTEGRATED====*/
 /*===3rd PARTY AUTHENTICATION====*/
 
-passport.user(new FacebookStrategy({
-  clientID: window.FACEBOOK_APP_ID,
-  clientSecret: FACEBOOK_APP_SECRET,
+passport.use(new FacebookStrategy({
+  clientID: config.FACEBOOK_APP_ID,
+  clientSecret: config.FACEBOOK_APP_SECRET,
   callbackURL: 'https://chattermonv2.herokuapp.com/login/facebook.return'
 },
   function(accessToken, refreshToken, profile, done) {
