@@ -140,7 +140,7 @@ export default class Login extends Component {
 
                 <div className={css.seperator}></div>
                 <div className={css.altAuthText}>Log in with Facebook</div>
-                <button className={css.gameButton}><a href="/auth/facebook">Facebook</a></button>
+                <button className={css.gameButton}><a href="/login/facebook">Facebook</a></button>
               </div>
               
             </div>
