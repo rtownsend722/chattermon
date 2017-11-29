@@ -206,6 +206,10 @@ export default class Game extends Component {
         } else {
           alert('You do not have that pokemon!');
         }
+      },
+
+      flee: () => {
+        console.log('flee!!!!');
       }
     }
   }
@@ -224,6 +228,9 @@ export default class Game extends Component {
       alert('it is not your turn!');
     } else {
       if (value === 'attack') {
+        if(value === 'flee') {
+          this.commandHandlers().flee();
+        } 
         if (this.state.pokemon[0].health <= 0) {
           alert('you must choose a new pokemon, this one has fainted!');
         } else {
@@ -234,6 +241,7 @@ export default class Game extends Component {
         }
       } else if (value.split(' ')[0] === "choose") {
         this.commandHandlers().choose(value.split(' ')[1]); 
+
       } else {
         alert('invalid input!')
       }
