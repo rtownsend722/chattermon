@@ -126,6 +126,8 @@ export default class Game extends Component {
             name: username,
             pokemon: this.state.pokemon
           }
+
+          // these are listening for events from the server
           socket.emit('join game', playerInit);
           socket.on('gamefull', message => alert(message)); 
           socket.on('chat message', this.socketHandlers().handleChat); 
@@ -208,8 +210,14 @@ export default class Game extends Component {
         }
       },
 
+      // Anne responsible:
       flee: () => {
-        console.log('flee!!!!');
+        // emit event via a socket somehow
+        this.state.socket.emit('flee', {
+          gameid: this.props.match.params.gameid,
+          name: this.state.name
+        });
+        console.log('fleeee!!!1');
       }
     }
   }
@@ -224,13 +232,15 @@ export default class Game extends Component {
       return this.commandHandlers().help(); 
     } 
     
-    if (!this.state.isActive) {
-      alert('it is not your turn!');
-    } else {
-      if (value === 'attack') {
-        if(value === 'flee') {
-          this.commandHandlers().flee();
-        } 
+    // if (!this.state.isActive) {
+    //   alert('it is not your turn!');
+
+    // }
+    //  else {
+      if(value === 'flee') {
+        this.commandHandlers().flee();
+        
+      } else if (value === 'attack') {
         if (this.state.pokemon[0].health <= 0) {
           alert('you must choose a new pokemon, this one has fainted!');
         } else {
@@ -245,7 +255,7 @@ export default class Game extends Component {
       } else {
         alert('invalid input!')
       }
-    }
+    // }
 
     this.setState({
       commandInput: ''
