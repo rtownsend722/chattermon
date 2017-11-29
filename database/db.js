@@ -28,6 +28,8 @@ const Users = sequelize.define('userito', {
         autoIncrement: true,
         primaryKey: true
     },
+    //add facebook_id
+    facebook_id: Sequelize.INTEGER,
     username: Sequelize.STRING,
     password: Sequelize.STRING,
     email: Sequelize.STRING
@@ -82,6 +84,11 @@ const saveUser = (username, password, email) =>  {
     })
 };
 
+// Save Facebook credentials
+const saveFacebookUser = () => {
+  return Users.create({ facebook_id, username, email});
+};
+
 const savePokemon = (pokemonObj) => {
   console.log('IN SAVE POKEMON!');
   Pokemon.create(pokemonObj).then((data) => {
@@ -106,6 +113,7 @@ const savePokemon = (pokemonObj) => {
 module.exports = {
   connecttion: sequelize,
   saveUser: saveUser,
+  saveFacebookUser: saveFacebookUser,
   Users: Users,
   Pokemon: Pokemon
 }

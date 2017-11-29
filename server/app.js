@@ -10,7 +10,9 @@ const bcrypt = Promise.promisifyAll(require('bcrypt'));
 const saltRounds = 10;
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const passport = require('passport');
+const passport = require('passport'),
+ FacebookStrategy = require('passport-facebook').Strategy;
+const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation } = require('../game-logic.js');
@@ -181,6 +183,42 @@ io.on('connection', (socket) => {
 
 /* =============== AUTHENTICATION ROUTES / LOGIC ================= */
 
+/*===NOT INTEGRATED====*/
+/*===3rd PARTY AUTHENTICATION====*/
+
+passport.use(new FacebookStrategy({
+  clientID: config.FACEBOOK_APP_ID,
+  clientSecret: config.FACEBOOK_APP_SECRET,
+  callbackURL: 'https://chattermonv2.herokuapp.com/login/facebook.return'
+},
+  function(accessToken, refreshToken, profile, done) {
+    //check db.Users for facebook.id matching profile.id
+    db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
+      if (err) {
+        return done(err);
+      } 
+      // if no user found, create one
+      if (!user) {
+        db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
+      // if user matched, done
+      } else {
+        return done(null, user);
+      }
+    });
+  }
+));
+
+// this route redirects user to FB for auth
+app.get('/login/facebook', passport.authenticate('facebook'));
+
+// this route redirects user to /welcome after approval
+app.get('login/facebook/return',
+  passport.authenticate('facebook', {failureRedirect: '/login'}),
+  function(req, res) {
+    res.redirect('/welcome');
+  });
+
+/*======================================*/
 
 app.post('/login', (req, resp) => {
   console.log('post request on /login');
@@ -193,17 +231,13 @@ app.post('/login', (req, resp) => {
   db.Users
   .findOne({where: { username } })
   .then(user => {
-    // finds user
-    // not found => end resp
-    // found => compare passwords
-    // don't match => end resp
-    // login
     if (!user) {
       resp.writeHead(201, {'Content-Type': 'text/plain'});
       resp.end('Username Not Found');
     }
     else {
       const hash = user.dataValues.password;
+      //check if password (provided) matches hash (stored)
       return bcrypt.compare(password, hash)
     }
   })
@@ -213,6 +247,8 @@ app.post('/login', (req, resp) => {
       resp.end('Passwords Do Not Match');
     }
     else {
+      // not sure where req.session comes from BUT
+      // add set username and logged in properties
       req.session.username = username;
       req.session.loggedIn = true;
       resp.redirect('/welcome');
@@ -225,6 +261,7 @@ app.post('/signup', (req, resp) => {
   const username = req.body.username;
   const password = req.body.password;
   const email = req.body.email;
+  // hash password with saltRounds (10)
   bcrypt.hash(password, saltRounds)
     .then(hash => db.saveUser(username, hash, email))
     .then(newuser => {
@@ -252,10 +289,13 @@ app.post('/signup', (req, resp) => {
       throw new Error(err)
     });
 })
+
+// Creates an object on the session (req.session.passport.user = {})
 passport.serializeUser(function(user, done) {
   done(null, user);
 });
 
+// uses provided user to fetch req.user
 passport.deserializeUser(function(user, done) {
   done(null, user);
 });
