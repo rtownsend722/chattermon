@@ -118,6 +118,15 @@ io.on('connection', (socket) => {
     io.to(data.gameid).emit('chat message', data)
   });
 
+  socket.on('flee', (data) => {
+    const game = games[data.gameid];
+    const player = game.playerTurn;
+    const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1';
+
+    io.to(data.gameid).emit('turn move', game);      
+    io.to(data.gameid).emit('gameover', { name: game[opponent].name });
+  });
+
   /* socket.on('attack') / socket.on('switch')
 
   These two functions both involve updating the game's state in some way and re-sending it back down to the client once it has been fully processed. Different events are emitted back to the client based on the state of the game, and can be extended to add more complexity into the game. 
