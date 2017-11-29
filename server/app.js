@@ -11,10 +11,8 @@ const saltRounds = 10;
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport'),
-// new
  FacebookStrategy = require('passport-facebook').Strategy;
-// let config;
-// process.env.FACEBOOK_APP_ID ? config = null : config = require('./config.js');
+const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation } = require('../game-logic.js');
@@ -201,37 +199,37 @@ io.on('connection', (socket) => {
 /*===NOT INTEGRATED====*/
 /*===3rd PARTY AUTHENTICATION====*/
 
-passport.use(new FacebookStrategy({
-  clientID: process.env.FACEBOOK_CLIENT_ID,
-  clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-  callbackURL: 'https://chattermonv2.herokuapp.com/login/facebook.return'
-},
-  function(accessToken, refreshToken, profile, done) {
-    //check db.Users for facebook.id matching profile.id
-    db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
-      if (err) {
-        return done(err);
-      } 
-      // if no user found, create one
-      if (!user) {
-        db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
-      // if user matched, done
-      } else {
-        return done(null, user);
-      }
-    });
-  }
-));
+// passport.use(new FacebookStrategy({
+//   clientID: config.FACEBOOK_APP_ID,
+//   clientSecret: config.FACEBOOK_APP_SECRET,
+//   callbackURL: 'http://localhost:3000/login/facebook/return'
+// },
+//   function(accessToken, refreshToken, profile, done) {
+//     //check db.Users for facebook.id matching profile.id
+//     db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
+//       if (err) {
+//         return done(err);
+//       } 
+//       // if no user found, create one
+//       if (!user) {
+//         db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
+//       // if user matched, done
+//       } else {
+//         return done(null, user);
+//       }
+//     });
+//   }
+// ));
 
-// this route redirects user to FB for auth
-app.get('/login/facebook', passport.authenticate('facebook'));
+// // this route redirects user to FB for auth
+// app.get('/login/facebook', passport.authenticate('facebook'));
 
-// this route redirects user to /welcome after approval
-app.get('login/facebook/return',
-  passport.authenticate('facebook', {failureRedirect: '/login'}),
-  function(req, res) {
-    res.redirect('/welcome');
-  });
+// // this route redirects user to /welcome after approval
+// app.get('login/facebook/return',
+//   passport.authenticate('facebook', {failureRedirect: '/login'}),
+//   function(req, res) {
+//     res.redirect('/welcome');
+//   });
 
 /*======================================*/
 
