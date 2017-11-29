@@ -123,6 +123,7 @@ io.on('connection', (socket) => {
     io.to(data.gameid).emit('chat message', data)
   });
 
+
   socket.on('flee', (data) => {
     const game = games[data.gameid];
     const player = game.playerTurn;
@@ -135,6 +136,12 @@ io.on('connection', (socket) => {
   socket.on('user typing', (data) => {
     console.log('typing on ', data.gameid);
     io.to(data.gameid).emit('show typing');
+  });
+  
+  socket.on('user typing', (data) => {
+    console.log('typing on ', data.gameid);
+    io.to(data.gameid).emit('show typing');
+
   });
 
   /* socket.on('attack') / socket.on('switch')
