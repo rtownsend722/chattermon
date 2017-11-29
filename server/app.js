@@ -85,6 +85,7 @@ const games = {};
 /* =============== SOCKET CONNECTION / LOGIC ===================== */
 
 io.on('connection', (socket) => {
+  console.log('a connection was made');
   
   /* socket.on('join game')
 
@@ -129,6 +130,11 @@ io.on('connection', (socket) => {
 
     io.to(data.gameid).emit('turn move', game);      
     io.to(data.gameid).emit('gameover', { name: game[opponent].name });
+  })
+
+  socket.on('user typing', (data) => {
+    console.log('typing on ', data.gameid);
+    io.to(data.gameid).emit('show typing');
   });
 
   /* socket.on('attack') / socket.on('switch')
