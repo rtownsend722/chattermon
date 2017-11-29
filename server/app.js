@@ -221,6 +221,7 @@ io.on('connection', (socket) => {
 //   }
 // ));
 
+
 // // this route redirects user to FB for auth
 // app.get('/login/facebook', passport.authenticate('facebook'));
 
