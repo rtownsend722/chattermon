@@ -201,27 +201,27 @@ io.on('connection', (socket) => {
 /*===NOT INTEGRATED====*/
 /*===3rd PARTY AUTHENTICATION====*/
 
-// passport.use(new FacebookStrategy({
-//   clientID: process.env.FACEBOOK_APP_ID,
-//   clientSecret: process.env.FACEBOOK_APP_SECRET,
-//   callbackURL: 'https://chattermonv2.herokuapp.com/login/facebook.return'
-// },
-//   function(accessToken, refreshToken, profile, done) {
-//     //check db.Users for facebook.id matching profile.id
-//     db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
-//       if (err) {
-//         return done(err);
-//       } 
-//       // if no user found, create one
-//       if (!user) {
-//         db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
-//       // if user matched, done
-//       } else {
-//         return done(null, user);
-//       }
-//     });
-//   }
-// ));
+passport.use(new FacebookStrategy({
+  clientID: process.env.FACEBOOK_CLIENT_ID,
+  clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+  callbackURL: 'https://chattermonv2.herokuapp.com/login/facebook.return'
+},
+  function(accessToken, refreshToken, profile, done) {
+    //check db.Users for facebook.id matching profile.id
+    db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
+      if (err) {
+        return done(err);
+      } 
+      // if no user found, create one
+      if (!user) {
+        db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
+      // if user matched, done
+      } else {
+        return done(null, user);
+      }
+    });
+  }
+));
 
 // this route redirects user to FB for auth
 app.get('/login/facebook', passport.authenticate('facebook'));
