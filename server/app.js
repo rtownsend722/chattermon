@@ -118,12 +118,11 @@ io.on('connection', (socket) => {
     io.to(data.gameid).emit('chat message', data)
   });
 
-  // Anne responsible:
   socket.on('flee', (data) => {
     const game = games[data.gameid];
     const player = game.playerTurn;
     const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1';
-    
+
     io.to(data.gameid).emit('turn move', game);      
     io.to(data.gameid).emit('gameover', { name: game[opponent].name });
   });

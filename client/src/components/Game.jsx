@@ -210,14 +210,11 @@ export default class Game extends Component {
         }
       },
 
-      // Anne responsible:
       flee: () => {
-        // emit event via a socket somehow
         this.state.socket.emit('flee', {
           gameid: this.props.match.params.gameid,
           name: this.state.name
         });
-        console.log('fleeee!!!1');
       }
     }
   }
