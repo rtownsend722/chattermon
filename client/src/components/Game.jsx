@@ -52,6 +52,14 @@ export default class Game extends Component {
           }
         })
       },
+      handleTyping: (data) => {
+        console.log('emitting initial typing event');
+
+        this.state.socket.emit('user typing', {
+          gameid: this.props.match.params.gameid
+        });
+
+      },
       playerInitialized: (data) => {
         this.setState({
           [data.player]: true,
@@ -131,6 +139,8 @@ export default class Game extends Component {
           socket.emit('join game', playerInit);
           socket.on('gamefull', message => alert(message)); 
           socket.on('chat message', this.socketHandlers().handleChat); 
+          socket.on('user typing', this.socketHandlers().handleTyping);
+          socket.on('show typing', (data) => console.log('received typing event from server with ', data))
           socket.on('player', this.socketHandlers().playerInitialized); 
           socket.on('ready', this.socketHandlers().handleReady); 
           socket.on('attack processed', this.socketHandlers().attackProcess); 
@@ -280,7 +290,7 @@ export default class Game extends Component {
       <div className={css.stateContainer}>
         <Logo name={this.state.name} isActive={this.state.isActive} opponent={this.state.opponent} />
         <GameState pokemon={this.state.pokemon} />
-        <Chat messageArray={this.state.messageArray} chatInput={this.state.chatInput} handleChatInputSubmit={this.handleChatInputSubmit} handleInputChange={this.handleInputChange} /> 
+        <Chat messageArray={this.state.messageArray} chatInput={this.state.chatInput} handleChatInputSubmit={this.handleChatInputSubmit} handleInputChange={this.handleInputChange} handleTyping={this.socketHandlers().handleTyping.bind(this)}/> 
       </div>
     );
   }
