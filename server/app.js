@@ -11,6 +11,7 @@ const saltRounds = 10;
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport'),
+// new
  FacebookStrategy = require('passport-facebook').Strategy;
 let config;
 process.env.FACEBOOK_APP_ID ? config = null : config = require('./config.js');
