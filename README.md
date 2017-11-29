@@ -1,11 +1,8 @@
-# Chattermon: Gotta Chat'em All
+# Chattermon v2
 
 ## Team
 
-  - James Terry
-  - Chris Messer
-  - David Kumarbai
-  - Thomas Parker
+  - Rebecca Townsend | Michael Cooper | Anne Pruett | Amanda Bozigian
 
 ## Table of Contents
 
