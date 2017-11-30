@@ -248,11 +248,11 @@ export default class Game extends Component {
       return this.commandHandlers().help(); 
     } 
     
-    // if (!this.state.isActive) {
-    //   alert('it is not your turn!');
+    if (!this.state.isActive) {
+      alert('it is not your turn!');
 
-    // }
-    //  else {
+    }
+     else {
       if(value === 'flee') {
         this.commandHandlers().flee();
         
@@ -271,7 +271,7 @@ export default class Game extends Component {
       } else {
         alert('invalid input!')
       }
-    // }
+    }
 
     this.setState({
       commandInput: ''
