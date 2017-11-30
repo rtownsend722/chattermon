@@ -135,6 +135,7 @@ export default class Game extends Component {
           isActive: false,
           forfeited: true
         });
+        setTimeout(() => this.props.history.replace("/"), 20000); 
       }
     }
   }
