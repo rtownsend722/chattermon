@@ -12,7 +12,8 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
-const config = require('./config.js');
+/*====IMPORT CONFIG FOR LOCAL DEV ONLY - POPULATE WITH YOUR OWN FACEBOOK AUTHENTICATION CREDENTIALS====*/
+// const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation } = require('../game-logic.js');
@@ -26,9 +27,9 @@ const dist = path.join(__dirname, '/../client/dist');
 /*===NOT INTEGRATED====*/
 /*===3rd PARTY AUTHENTICATION====*/
 passport.use(new FacebookStrategy({
-  clientID: config.facebookAuth.clientID,
-  clientSecret: config.facebookAuth.clientSecret,
-  callbackURL: config.facebookAuth.callbackURL
+  clientID: process.env.FACEBOOK_CLIENT_ID || config.facebookAuth.clientID,
+  clientSecret: process.env.FACEBOOK_CLIENT_SECRET || config.facebookAuth.clientSecret,
+  callbackURL: process.env.FACEBOOK_CALLBACK_URL || config.facebookAuth.callbackURL
 },
   function(accessToken, refreshToken, profile, cb) {
     console.log('PROFILE: ', profile);
