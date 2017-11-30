@@ -10,9 +10,9 @@ const bcrypt = Promise.promisifyAll(require('bcrypt'));
 const saltRounds = 10;
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const passport = require('passport'),
- FacebookStrategy = require('passport-facebook').Strategy;
-// const config = require('./config.js');
+const passport = require('passport');
+const FacebookStrategy = require('passport-facebook').Strategy;
+const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation } = require('../game-logic.js');
@@ -23,16 +23,43 @@ const dist = path.join(__dirname, '/../client/dist');
 
 /* ======================== MIDDLEWARE ======================== */
 
-app.use(bodyParser());
+/*===NOT INTEGRATED====*/
+/*===3rd PARTY AUTHENTICATION====*/
+passport.use(new FacebookStrategy({
+  clientID: config.facebookAuth.clientID,
+  clientSecret: config.facebookAuth.clientSecret,
+  callbackURL: config.facebookAuth.callbackURL
+},
+  function(accessToken, refreshToken, profile, cb) {
+    console.log('in auth function');
+    return cb(null, profile);
+  }
+));
+
+// Creates an object on the session (req.session.passport.user = {})
+passport.serializeUser(function(user, cb) {
+  cb(null, user);
+});
+
+// uses provided user to fetch req.user
+passport.deserializeUser(function(obj, cb) {
+  cb(null, obj);
+});
+
 app.use(express.static(dist));
 
 app.use(cookieParser());
-app.use(session({
-  secret: 'odajs2iqw9asjxzascatsas22',
-  resave: false,
-  saveUninitialized: false,
-  // cookie: { secure: true },
-}));
+app.use(bodyParser());
+app.use(require('body-parser').urlencoded({extended: true}));
+
+// app.use(session({
+//   secret: 'odajs2iqw9asjxzascatsas22',
+//   resave: false,
+//   saveUninitialized: false,
+//   // cookie: { secure: true },
+// }));
+
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -196,41 +223,15 @@ io.on('connection', (socket) => {
 
 /* =============== AUTHENTICATION ROUTES / LOGIC ================= */
 
-/*===NOT INTEGRATED====*/
-/*===3rd PARTY AUTHENTICATION====*/
+// this route redirects user to FB for auth
+app.get('/login/facebook',
+  passport.authenticate('facebook'));
 
-// passport.use(new FacebookStrategy({
-//   clientID: config.FACEBOOK_APP_ID,
-//   clientSecret: config.FACEBOOK_APP_SECRET,
-//   callbackURL: 'http://localhost:3000/login/facebook/return'
-// },
-//   function(accessToken, refreshToken, profile, done) {
-//     //check db.Users for facebook.id matching profile.id
-//     db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
-//       if (err) {
-//         return done(err);
-//       } 
-//       // if no user found, create one
-//       if (!user) {
-//         db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
-//       // if user matched, done
-//       } else {
-//         return done(null, user);
-//       }
-//     });
-//   }
-// ));
-
-
-// // this route redirects user to FB for auth
-// app.get('/login/facebook', passport.authenticate('facebook'));
-
-// // this route redirects user to /welcome after approval
-// app.get('login/facebook/return',
-//   passport.authenticate('facebook', {failureRedirect: '/login'}),
-//   function(req, res) {
-//     res.redirect('/welcome');
-//   });
+// this route redirects user to /welcome after approval
+app.get('/login/facebook/return',
+  passport.authenticate('facebook', {successRedirect: '/welcome',
+    failureRedirect: '/login'})
+  );
 
 /*======================================*/
 
@@ -304,15 +305,6 @@ app.post('/signup', (req, resp) => {
     });
 })
 
-// Creates an object on the session (req.session.passport.user = {})
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
-
-// uses provided user to fetch req.user
-passport.deserializeUser(function(user, done) {
-  done(null, user);
-});
 
 app.get('/user', (req, resp) => {
   resp.end(JSON.stringify({
