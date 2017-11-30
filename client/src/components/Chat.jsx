@@ -21,11 +21,12 @@ export default class Chat extends Component {
     this.state = {
       shouldScroll: true,
       showNewMessageBanner: false,
-      userTyping: ''
+      userTyping: '',
+      showTypingBanner: false
     };
 
     this.handleChatInputSubmit = this.handleChatInputSubmit.bind(this);
-    this.handleNewUserTyping = this.handleNewUserTyping.bind(this);
+    // this.handleNewUserTyping = this.handleNewUserTyping.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -61,8 +62,25 @@ export default class Chat extends Component {
       }
     }
 
+    // check to see if prop indicating which person is typing has changed
+      //if so, invoke handleUserTyping with value of user typing
     if (prevProps.opponentTyping !== this.props.opponentTyping) {
-      this.handleNewUserTyping(this.props.opponentTyping);
+      console.log('user typing is ', this.props.opponentTyping);
+      //if the opponent typing is blank (triggered by enter or inactivity)
+      if (this.props.opponentTyping === '') {
+        //change state and do not show the banner
+        this.setState({
+          userTyping: '',
+          showTypingBanner: false
+        })
+      } else {
+        //change the state to the correct user, keep banner up
+        this.setState({
+          userTyping: this.props.opponentTyping,
+          showTypingBanner: true
+        })
+      }
+      // this.handleNewUserTyping(this.props.opponentTyping);
     }
   }
 
@@ -74,12 +92,13 @@ export default class Chat extends Component {
     }
   }
 
-  handleNewUserTyping(userTyping){
-    console.log('user typing is ', userTyping);
-    this.setState({
-      userTyping: userTyping
-    })
-  }
+  // update state with new value of user typing
+  // handleNewUserTyping(userTyping){
+  //   console.log('user typing is ', userTyping);
+  //   this.setState({
+  //     userTyping: userTyping
+  //   })
+  // }
 
   render() {
     return (
@@ -98,7 +117,7 @@ export default class Chat extends Component {
           {/* for future styling: https://alistapart.com/article/expanding-text-areas-made-elegant */}
           <div className={css.newMessageAlertBanner} style={{display: this.state.showNewMessageBanner ? 'block' : 'none' }}>New Message</div>
           <TextareaAutosize className={css.messageInput} value={this.props.chatInput} placeholder="gotta chat em all..." onKeyDown={this.handleChatInputSubmit} onChange={(e) => this.props.handleInputChange(e, 'chatInput')} onKeyUp={this.props.handleTyping} />
-          <div className={css.userTypingContainer} style={{display: 'float'}}>{this.state.userTyping} is typing...</div>
+          <div className={css.userTypingContainer} style={{display: this.state.showTypingBanner ? 'block': 'none'}}>{this.state.userTyping} is typing...</div>
         </div>
       </div>
     )

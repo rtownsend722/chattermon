@@ -56,7 +56,7 @@ export default class Game extends Component {
           }
         })
       },
-      handleTyping: (data) => {
+      handleTyping: () => {
         console.log('emitting initial user typing event and user is ', this.state.name);
         let context = this;
 
