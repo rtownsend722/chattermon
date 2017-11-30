@@ -29,7 +29,7 @@ const Users = sequelize.define('userito', {
         primaryKey: true
     },
     //add facebook_id
-    facebook_id: Sequelize.INTEGER,
+    // facebook_id: Sequelize.INTEGER,
     username: Sequelize.STRING,
     password: Sequelize.STRING,
     email: Sequelize.STRING
