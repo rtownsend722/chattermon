@@ -7,6 +7,7 @@ import Chat from './Chat.jsx';
 import Terminal from './Terminal.jsx';
 import GameView from './GameView.jsx';
 import GameOverView from './GameOverView.jsx';
+import GameForfeit from './GameForfeit.jsx';
 import GameState from './GameState.jsx';
 import Logo from './Logo.jsx';
 import css from '../styles.css';
@@ -29,6 +30,7 @@ export default class Game extends Component {
       gameOver: false,
       forfeited: false,
       winner: null,
+      loser: null,
       chatInput: '',
       commandInput: '',
       commandArray: [{command: `The game will begin shortly - type 'help' to learn how to play`}],
@@ -129,6 +131,7 @@ export default class Game extends Component {
       forfeit: (data) => {
         this.setState({
           winner: data.winner,
+          loser: data.loser,
           isActive: false,
           forfeited: true
         });
@@ -300,7 +303,7 @@ export default class Game extends Component {
     } else if (this.state.gameOver) {
       return <GameOverView pokemon={winner === name ? pokemon : opponent.pokemon} winner={winner} />
     } else if(this.state.forfeited) {
-      // build a different component for forfeit
+      return <GameForfeit/>
     } else {
       return <GameView opponent={opponent} pokemon={pokemon} attacking={attacking} />
     }
