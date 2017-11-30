@@ -110,7 +110,7 @@ const saveUser = (username, password, email, facebookid, avatarurl, skinid, user
 
 // Save Facebook credentials
 const saveFacebookUser = () => {
-  return Users.create({ facebook_id, username, email});
+  return Users.create({ username, password:'', email, facebookid, avatarurl:'', skinid:'', usertype:'', pokemons:[]});
 };
 
 const savePokemon = (pokemonObj) => {

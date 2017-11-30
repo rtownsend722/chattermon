@@ -12,7 +12,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport'),
  FacebookStrategy = require('passport-facebook').Strategy;
-// const config = require('./config.js');
+const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation } = require('../game-logic.js');
@@ -23,18 +23,21 @@ const dist = path.join(__dirname, '/../client/dist');
 
 /* ======================== MIDDLEWARE ======================== */
 
-app.use(bodyParser());
-app.use(express.static(dist));
 
 app.use(cookieParser());
+
 app.use(session({
   secret: 'odajs2iqw9asjxzascatsas22',
   resave: false,
   saveUninitialized: false,
   // cookie: { secure: true },
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(bodyParser());
+app.use(express.static(dist));
 
 // ** Webpack middleware **
 // Note: Make sure while developing that bundle.js is NOT built - delete if it is in dist directory
@@ -52,6 +55,8 @@ if (process.env.NODE_ENV !== 'production') {
     publicPath: config.output.publicPathdist
   }));
 }
+
+
 
 /* =============================================================== */ 
 
@@ -104,7 +109,7 @@ io.on('connection', (socket) => {
           player2: null,
           playerTurn: 'player1'
         }
-        
+
         io.to(socket.id).emit('player', player1);
       });
     } else if (data.gameid in games && !games[data.gameid].player2) {
@@ -198,46 +203,37 @@ io.on('connection', (socket) => {
 
 /* =============== AUTHENTICATION ROUTES / LOGIC ================= */
 
-/*===NOT INTEGRATED====*/
 /*===3rd PARTY AUTHENTICATION====*/
 
-// passport.use(new FacebookStrategy({
-//   clientID: config.FACEBOOK_APP_ID,
-//   clientSecret: config.FACEBOOK_APP_SECRET,
-//   callbackURL: 'http://localhost:3000/login/facebook/return'
-// },
-//   function(accessToken, refreshToken, profile, done) {
-//     //check db.Users for facebook.id matching profile.id
-//     db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
-//       if (err) {
-//         return done(err);
-//       } 
-//       // if no user found, create one
-//       if (!user) {
-//         db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
-//       // if user matched, done
-//       } else {
-//         return done(null, user);
-//       }
-//     });
-//   }
-// ));
-
-
-// // this route redirects user to FB for auth
-// app.get('/login/facebook', passport.authenticate('facebook'));
-
-// // this route redirects user to /welcome after approval
-// app.get('login/facebook/return',
-//   passport.authenticate('facebook', {failureRedirect: '/login'}),
-//   function(req, res) {
-//     res.redirect('/welcome');
-//   });
-
+passport.use(new FacebookStrategy({
+  clientID: config.FACEBOOK_APP_ID,
+  clientSecret: config.FACEBOOK_APP_SECRET,
+  callbackURL: '/auth/facebook/callback',
+  // profileFields: ['id', 'displayName', 'emails'],
+  passReqToCallback: true
+},
+  function(req, access_token, refresh_token, profile, done) {
+    console.log('yoyoyoyoyoyoyoyo');
+    //check db.Users for facebook.id matching profile.id
+    process.nextTick(function() {
+      db.Users.findOne({ 'facebookid' : profile.id }, function(err, user) {
+        if (err) {
+          return done(err);
+        } 
+        // if no user found, create one
+        if (!user) {
+          db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
+        // if user matched, done
+        } else {
+          return done(null, user);
+        }
+      });
+    })
+  }
+));
 /*======================================*/
 
 app.post('/login', (req, resp) => {
-  console.log('post request on /login');
   const username = req.body.username;
   const password = req.body.password;
 
@@ -291,8 +287,7 @@ app.post('/signup', (req, resp) => {
             resp.writeHead(201, {'Content-Type': 'app/json'});
             resp.end(session);
           });
-      }
-      else if (newuser.match('Username Already Exists')) {
+      } else if (newuser.match('Username Already Exists')) {
         resp.writeHead(201, {'Content-Type': 'text/plain'});
         resp.end('Username Already Exists');
       }
@@ -315,6 +310,17 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(user, done) {
   done(null, user);
 });
+
+// // this route redirects user to FB for auth
+app.get('/auth/facebook', passport.authenticate('facebook', {session: false, scope: ['email']}));
+
+// this route redirects user to /welcome after approval
+app.get('auth/facebook/callback',
+  passport.authenticate('facebook', {
+    successRedirect: '/welcome',
+    failureRedirect: '/signup'
+  })
+);
 
 app.get('/user', (req, resp) => {
   resp.end(JSON.stringify({
