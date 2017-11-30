@@ -27,6 +27,7 @@ export default class Game extends Component {
       isActive: null,
       attacking: false,
       gameOver: false,
+      forfeited: false,
       winner: null,
       chatInput: '',
       commandInput: '',
@@ -298,6 +299,8 @@ export default class Game extends Component {
       )
     } else if (this.state.gameOver) {
       return <GameOverView pokemon={winner === name ? pokemon : opponent.pokemon} winner={winner} />
+    } else if(this.state.forfeited) {
+      // build a different component for forfeit
     } else {
       return <GameView opponent={opponent} pokemon={pokemon} attacking={attacking} />
     }
