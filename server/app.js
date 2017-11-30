@@ -131,18 +131,23 @@ io.on('connection', (socket) => {
 
     io.to(data.gameid).emit('turn move', game);      
     io.to(data.gameid).emit('gameover', { name: game[opponent].name });
-  })
+  });
 
   socket.on('user typing', (data) => {
     console.log('typing on ', data.gameid);
-    io.to(data.gameid).emit('show typing');
+    //TODO: send over user data to user typing event
+    io.to(data.gameid).emit('show typing', {
+      gameid: data.gameid,
+      userTyping: data.userTyping
+    });
   });
   
-  socket.on('user typing', (data) => {
-    console.log('typing on ', data.gameid);
-    io.to(data.gameid).emit('show typing');
+  // socket.on('show typing', (data) => {
+  //   console.log('typing on ', data.gameid);
+  //   //TODO: broadcast only, use username
+  //   io.to(data.gameid).emit('show typing');
 
-  });
+  // });
 
   /* socket.on('attack') / socket.on('switch')
 
