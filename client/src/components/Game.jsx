@@ -7,6 +7,7 @@ import Chat from './Chat.jsx';
 import Terminal from './Terminal.jsx';
 import GameView from './GameView.jsx';
 import GameOverView from './GameOverView.jsx';
+import GameForfeit from './GameForfeit.jsx';
 import GameState from './GameState.jsx';
 import Logo from './Logo.jsx';
 import css from '../styles.css';
@@ -27,7 +28,9 @@ export default class Game extends Component {
       isActive: null,
       attacking: false,
       gameOver: false,
+      forfeited: false,
       winner: null,
+      loser: null,
       chatInput: '',
       commandInput: '',
       commandArray: [{command: `The game will begin shortly - type 'help' to learn how to play`}],
@@ -123,6 +126,15 @@ export default class Game extends Component {
           isActive: false
         }); 
         setTimeout(() => this.props.history.replace("/"), 20000); 
+      },
+
+      forfeit: (data) => {
+        this.setState({
+          winner: data.winner,
+          loser: data.loser,
+          isActive: false,
+          forfeited: true
+        });
       }
     }
   }
@@ -155,6 +167,7 @@ export default class Game extends Component {
           socket.on('attack processed', this.socketHandlers().attackProcess); 
           socket.on('turn move', this.socketHandlers().turnMove);
           socket.on('gameover', this.socketHandlers().gameOver); 
+          socket.on('game forfeited', this.socketHandlers().forfeit);
         }
         else {
           this.props.history.replace("/login");
@@ -280,7 +293,7 @@ export default class Game extends Component {
   }
 
   renderGame() {
-    const { pokemon, opponent, winner, name, attacking } = this.state;
+    const { pokemon, opponent, winner, loser, name, attacking } = this.state;
     if (!this.state.opponent) {
       return (
         <div className={css.loading}>
@@ -289,6 +302,8 @@ export default class Game extends Component {
       )
     } else if (this.state.gameOver) {
       return <GameOverView pokemon={winner === name ? pokemon : opponent.pokemon} winner={winner} />
+    } else if(this.state.forfeited) {
+      return <GameForfeit winner={winner} loser={loser} pokemon={pokemon}/>
     } else {
       return <GameView opponent={opponent} pokemon={pokemon} attacking={attacking} />
     }
