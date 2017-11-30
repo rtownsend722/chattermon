@@ -27,9 +27,9 @@ const dist = path.join(__dirname, '/../client/dist');
 /*===NOT INTEGRATED====*/
 /*===3rd PARTY AUTHENTICATION====*/
 passport.use(new FacebookStrategy({
-  clientID: process.env.FACEBOOK_CLIENT_ID || config.facebookAuth.clientID,
-  clientSecret: process.env.FACEBOOK_CLIENT_SECRET || config.facebookAuth.clientSecret,
-  callbackURL: process.env.FACEBOOK_CALLBACK_URL || config.facebookAuth.callbackURL
+  clientID: process.env.FACEBOOK_CLIENT_ID, // || config.facebookAuth.clientID,
+  clientSecret: process.env.FACEBOOK_CLIENT_SECRET, // || config.facebookAuth.clientSecret,
+  callbackURL: process.env.FACEBOOK_CALLBACK_URL // || config.facebookAuth.callbackURL
 },
   function(accessToken, refreshToken, profile, cb) {
     console.log('PROFILE: ', profile);
