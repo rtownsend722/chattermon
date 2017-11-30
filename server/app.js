@@ -95,6 +95,7 @@ io.on('connection', (socket) => {
 
   socket.on('join game', (data) => {
     socket.join(data.gameid);
+    console.log('data: ', data);
     if (!(data.gameid in games)) {
       createPlayer(data, 'player1')
       .then(player1 => {
@@ -103,6 +104,7 @@ io.on('connection', (socket) => {
           player2: null,
           playerTurn: 'player1'
         }
+        
         io.to(socket.id).emit('player', player1);
       });
     } else if (data.gameid in games && !games[data.gameid].player2) {

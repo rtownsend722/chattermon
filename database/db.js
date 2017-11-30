@@ -1,16 +1,23 @@
 const Sequelize = require('sequelize');
 const rgx = new RegExp(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-const match = process.env.DATABASE_URL ? process.env.DATABASE_URL.match(rgx) : 'postgres://wairrcwaikkuob:b6f7a04b36dc888549bcedd0c99f7cec9c18eb3e83bda91f24bd31fbe60eba50@ec2-50-16-199-246.compute-1.amazonaws.com:5432/d10sjl0jdmpqhu'.match(rgx);
+// const match = process.env.HEROKU_POSTGRESQL_COBALT_URL ? process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) : 'postgres://nbcclctopnhiug:51f82baedd1bc40dbb63284137ea0186aeed9aaca6c18c79335c3290995b196d@ec2-23-21-155-53.compute-1.amazonaws.com:5432/dcf5u7ehd5s343'.match(rgx);
+const match = 'postgres://kqjhzdmigbxlqb:1a58e5a4649b4085c130ad53fecf9030663afc2e1f76509f7f66ef77784189df@ec2-54-235-210-115.compute-1.amazonaws.com:5432/demruaiple0ldm'.match(rgx);
+
+console.log('dbname ', match[5]);
+console.log('user ', match[1]);
+console.log('password ', match[2]);
+console.log('host ', match[3]);
+console.log('port ', match[4]);
 
 sequelize = new Sequelize(match[5], match[1], match[2], {
-    dialect:  'postgres',
-    protocol: 'postgres',
-    port:     match[4],
-    host:     match[3],
-    logging: false,
-    dialectOptions: {
-        ssl: true
-    }
+  dialect:  'postgres',
+  protocol: 'postgres',
+  port:     match[4],
+  host:     match[3],
+  logging: false,
+  dialectOptions: {
+    ssl: true
+  }
 });
 
 sequelize
@@ -22,23 +29,27 @@ sequelize
     console.error('Unable to connect to the database:', err);
   });
 
-const Users = sequelize.define('userito', {
+const Users = sequelize.define('users', {
     id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
+      type: Sequelize.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
     },
-    //add facebook_id
-    // facebook_id: Sequelize.INTEGER,
     username: Sequelize.STRING,
     password: Sequelize.STRING,
-    email: Sequelize.STRING
-  }
-  , {
+    email: Sequelize.STRING,
+    facebookid: Sequelize.INTEGER,
+    avatarurl: Sequelize.TEXT,
+    skinid: Sequelize.TEXT,
+    usertype: Sequelize.TEXT,
+    pokemons: Sequelize.ARRAY(Sequelize.TEXT)
+  }, 
+  {
     timestamps: false
-  });
+  }
+);
 
-const Pokemon = sequelize.define('pokerito', {
+const Pokemon = sequelize.define('pokemon', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
@@ -50,23 +61,36 @@ const Pokemon = sequelize.define('pokerito', {
   baseAttack: Sequelize.INTEGER,
   baseDefense: Sequelize.INTEGER,
   backSprite: Sequelize.STRING,
-  frontSprite: Sequelize.STRING
+  frontSprite: Sequelize.STRING,
+
+  // move: Sequelize.ARRAY(Sequelize.TEXT)
 },
   {
     timestamps: false
-});
+  }
+);
+
+const Moves = sequelize.define('move', {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    unique: true
+  },  
+  name: Sequelize.STRING,
+  power: Sequelize.INTEGER,
+  accuracy: Sequelize.INTEGER
+},
+  {
+    timestamps: false
+  }
+);
+
+Users.sync({logging: console.log});
+Pokemon.sync({logging: console.log});
+Moves.sync({logging: console.log});
 
 
-Users.sync();
-Pokemon.sync();
-
-// Users
-//   .findAll()
-//   .then(allUsers => {
-//     console.log('all users')
-//     console.log(allUsers)
-//   })
-const saveUser = (username, password, email) =>  {
+const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype) =>  {
   return Users
     .findOne({ where: { username } })
     .then(userFound => {
@@ -80,7 +104,7 @@ const saveUser = (username, password, email) =>  {
         'Username Already Exists':
         'Email Already Exists';
       }
-      else return Users.create({ username, password, email });
+      else return Users.create({ username, password, email, facebookid:0, avatarurl:'', skinid:'', usertype:'', pokemons:[] });
     })
 };
 
@@ -111,18 +135,19 @@ const savePokemon = (pokemonObj) => {
 
 
 module.exports = {
-  connecttion: sequelize,
+  connection: sequelize,
   saveUser: saveUser,
   saveFacebookUser: saveFacebookUser,
   Users: Users,
-  Pokemon: Pokemon
+  Pokemon: Pokemon,
+  Moves: Moves
 }
 
 // POSTGRES WITHOUT SEQUELIZE
 // const { Client } = require('pg');
 
 // const client = new Client({
-//   connectionString: process.env.DATABASE_URL || 'postgres://wairrcwaikkuob:b6f7a04b36dc888549bcedd0c99f7cec9c18eb3e83bda91f24bd31fbe60eba50@ec2-50-16-199-246.compute-1.amazonaws.com:5432/d10sjl0jdmpqhu',
+//   connectionString: process.env.HEROKU_POSTGRESQL_COBALT_URL || 'postgres://wairrcwaikkuob:b6f7a04b36dc888549bcedd0c99f7cec9c18eb3e83bda91f24bd31fbe60eba50@ec2-50-16-199-246.compute-1.amazonaws.com:5432/d10sjl0jdmpqhu',
 //   ssl: true,
 // });
 
