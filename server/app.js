@@ -131,17 +131,15 @@ io.on('connection', (socket) => {
 
     io.to(data.gameid).emit('turn move', game);      
     io.to(data.gameid).emit('gameover', { name: game[opponent].name });
-  })
-
-  socket.on('user typing', (data) => {
-    console.log('typing on ', data.gameid);
-    io.to(data.gameid).emit('show typing');
   });
-  
+
   socket.on('user typing', (data) => {
     console.log('typing on ', data.gameid);
-    io.to(data.gameid).emit('show typing');
-
+    
+    io.to(data.gameid).emit('show typing', {
+      gameid: data.gameid,
+      typingUser: data.typingUser
+    });
   });
 
   /* socket.on('attack') / socket.on('switch')

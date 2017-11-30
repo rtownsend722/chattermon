@@ -31,7 +31,8 @@ export default class Game extends Component {
       chatInput: '',
       commandInput: '',
       commandArray: [{command: `The game will begin shortly - type 'help' to learn how to play`}],
-      socket: null
+      socket: null,
+      opponentTyping: ''
     }
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -53,12 +54,19 @@ export default class Game extends Component {
         })
       },
       handleTyping: (data) => {
-        console.log('emitting initial typing event');
+        console.log('emitting initial user typing event and user is ', this.state.name);
+        let context = this;
 
         this.state.socket.emit('user typing', {
-          gameid: this.props.match.params.gameid
+          gameid: this.props.match.params.gameid,
+          typingUser: context.state.name
         });
-
+      },
+      opponentTyping: (data) => {
+        this.setState({
+          opponentTyping: data.typingUser
+        })
+        console.log('opponent typing handler and user typing is ', this.state.opponentTyping);
       },
       playerInitialized: (data) => {
         this.setState({
@@ -140,7 +148,8 @@ export default class Game extends Component {
           socket.on('gamefull', message => alert(message)); 
           socket.on('chat message', this.socketHandlers().handleChat); 
           socket.on('user typing', this.socketHandlers().handleTyping);
-          socket.on('show typing', (data) => console.log('received typing event from server with ', data))
+          // socket.on('show typing', (data) => console.log('received show typing event from server with user and game id', data.gameid, ' ', data.typingUser))
+          socket.on('show typing', this.socketHandlers().opponentTyping);
           socket.on('player', this.socketHandlers().playerInitialized); 
           socket.on('ready', this.socketHandlers().handleReady); 
           socket.on('attack processed', this.socketHandlers().attackProcess); 
@@ -290,7 +299,7 @@ export default class Game extends Component {
       <div className={css.stateContainer}>
         <Logo name={this.state.name} isActive={this.state.isActive} opponent={this.state.opponent} />
         <GameState pokemon={this.state.pokemon} />
-        <Chat messageArray={this.state.messageArray} chatInput={this.state.chatInput} handleChatInputSubmit={this.handleChatInputSubmit} handleInputChange={this.handleInputChange} handleTyping={this.socketHandlers().handleTyping.bind(this)}/> 
+        <Chat messageArray={this.state.messageArray} chatInput={this.state.chatInput} handleChatInputSubmit={this.handleChatInputSubmit} handleInputChange={this.handleInputChange} handleTyping={this.socketHandlers().handleTyping.bind(this)} opponentTyping={this.state.opponentTyping} /> 
       </div>
     );
   }
