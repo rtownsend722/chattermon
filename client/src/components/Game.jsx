@@ -53,11 +53,12 @@ export default class Game extends Component {
         })
       },
       handleTyping: (data) => {
-        console.log('emitting initial user typing event');
+        console.log('emitting initial user typing event and user is ', this.state.name);
+        let context = this;
 
         this.state.socket.emit('user typing', {
           gameid: this.props.match.params.gameid,
-          typingUser: this.state.name
+          typingUser: context.state.name
         });
 
       },
@@ -141,7 +142,7 @@ export default class Game extends Component {
           socket.on('gamefull', message => alert(message)); 
           socket.on('chat message', this.socketHandlers().handleChat); 
           socket.on('user typing', this.socketHandlers().handleTyping);
-          socket.on('show typing', (data) => console.log('received show typing event from server with user and game id', data.gameid, ' ', data.userTyping))
+          socket.on('show typing', (data) => console.log('received show typing event from server with user and game id', data.gameid, ' ', data.typingUser))
           socket.on('player', this.socketHandlers().playerInitialized); 
           socket.on('ready', this.socketHandlers().handleReady); 
           socket.on('attack processed', this.socketHandlers().attackProcess); 

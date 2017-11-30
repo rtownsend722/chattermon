@@ -138,7 +138,7 @@ io.on('connection', (socket) => {
     //TODO: send over user data to user typing event
     io.to(data.gameid).emit('show typing', {
       gameid: data.gameid,
-      userTyping: data.userTyping
+      typingUser: data.typingUser
     });
   });
   
