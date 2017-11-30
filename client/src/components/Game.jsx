@@ -46,13 +46,14 @@ export default class Game extends Component {
   socketHandlers() {
     return {
       handleChat: (message) => {
-      var messageInstance = {
-          name: message.name,
-          text: message.text
+        var messageInstance = {
+            name: message.name,
+            text: message.text
         }
         this.setState(prevState => {
           return {
-            messageArray: prevState.messageArray.concat(messageInstance)
+            messageArray: prevState.messageArray.concat(messageInstance),
+            opponentTyping: ''
           }
         })
       },

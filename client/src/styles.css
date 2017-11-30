@@ -73,11 +73,19 @@ body {
 }
 
 .userTypingContainer {
-  background-color: red;
+  background-color: #0288D1;
   color: white;
   font-size: 0.75rem;
   text-align: center;
   padding: 2px 0;
+}
+
+.userTypingImg {
+  position: absolute;
+  right: 0px;
+  top: 10px;
+  height: 50px;
+  width: auto;
 }
 
 .newMessageAlertBanner {
