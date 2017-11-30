@@ -20,10 +20,12 @@ export default class Chat extends Component {
     super(props);
     this.state = {
       shouldScroll: true,
-      showNewMessageBanner: false
+      showNewMessageBanner: false,
+      userTyping: ''
     };
 
     this.handleChatInputSubmit = this.handleChatInputSubmit.bind(this);
+    this.handleNewUserTyping = this.handleNewUserTyping.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -58,6 +60,10 @@ export default class Chat extends Component {
         messageContainer.scrollTop = messageContainer.scrollHeight;
       }
     }
+
+    if (prevProps.opponentTyping !== this.props.opponentTyping) {
+      this.handleNewUserTyping(this.props.opponentTyping);
+    }
   }
 
   handleChatInputSubmit(e) {
@@ -66,6 +72,13 @@ export default class Chat extends Component {
       this.props.handleChatInputSubmit(e);
       messageContainer.scrollTop = messageContainer.scrollHeight;
     }
+  }
+
+  handleNewUserTyping(userTyping){
+    console.log('user typing is ', userTyping);
+    this.setState({
+      userTyping: userTyping
+    })
   }
 
   render() {
@@ -85,6 +98,7 @@ export default class Chat extends Component {
           {/* for future styling: https://alistapart.com/article/expanding-text-areas-made-elegant */}
           <div className={css.newMessageAlertBanner} style={{display: this.state.showNewMessageBanner ? 'block' : 'none' }}>New Message</div>
           <TextareaAutosize className={css.messageInput} value={this.props.chatInput} placeholder="gotta chat em all..." onKeyDown={this.handleChatInputSubmit} onChange={(e) => this.props.handleInputChange(e, 'chatInput')} onKeyUp={this.props.handleTyping} />
+          <div className={css.userTypingContainer} style={{display: 'float'}}>{this.state.userTyping} is typing...</div>
         </div>
       </div>
     )

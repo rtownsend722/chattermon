@@ -72,6 +72,14 @@ body {
   width: 100%;
 }
 
+.userTypingContainer {
+  background-color: red;
+  color: white;
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 2px 0;
+}
+
 .newMessageAlertBanner {
   background-color: #0288D1;
   color: white;

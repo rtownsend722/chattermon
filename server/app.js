@@ -135,19 +135,12 @@ io.on('connection', (socket) => {
 
   socket.on('user typing', (data) => {
     console.log('typing on ', data.gameid);
-    //TODO: send over user data to user typing event
+    
     io.to(data.gameid).emit('show typing', {
       gameid: data.gameid,
       typingUser: data.typingUser
     });
   });
-  
-  // socket.on('show typing', (data) => {
-  //   console.log('typing on ', data.gameid);
-  //   //TODO: broadcast only, use username
-  //   io.to(data.gameid).emit('show typing');
-
-  // });
 
   /* socket.on('attack') / socket.on('switch')
 
