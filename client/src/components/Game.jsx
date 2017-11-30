@@ -123,6 +123,14 @@ export default class Game extends Component {
           isActive: false
         }); 
         setTimeout(() => this.props.history.replace("/"), 20000); 
+      },
+
+      forfeit: (data) => {
+        this.setState({
+          winner: data.winner,
+          isActive: false,
+          forfeited: true
+        });
       }
     }
   }
@@ -155,6 +163,7 @@ export default class Game extends Component {
           socket.on('attack processed', this.socketHandlers().attackProcess); 
           socket.on('turn move', this.socketHandlers().turnMove);
           socket.on('gameover', this.socketHandlers().gameOver); 
+          socket.on('game forfeited', this.socketHandlers().forfeit);
         }
         else {
           this.props.history.replace("/login");

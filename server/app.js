@@ -130,7 +130,7 @@ io.on('connection', (socket) => {
     const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1';
 
     io.to(data.gameid).emit('turn move', game);      
-    io.to(data.gameid).emit('gameover', { name: game[opponent].name });
+    io.to(data.gameid).emit('game forfeited', { winner: game[opponent].name });
   });
 
   socket.on('user typing', (data) => {
