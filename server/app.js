@@ -31,8 +31,26 @@ passport.use(new FacebookStrategy({
   callbackURL: config.facebookAuth.callbackURL
 },
   function(accessToken, refreshToken, profile, cb) {
-    console.log('in auth function');
-    return cb(null, profile);
+    console.log('PROFILE: ', profile);
+    db.Users.findOrCreate({
+      where: {
+        username: profile.displayName,
+        password: '',
+        email: '',
+        facebookid: profile.id,
+        avatarurl: '',
+        skinid: '',
+        usertype: '',
+        pokemons: []
+      }
+    })
+    .spread((user, created) => {
+      console.log('User created with', user.get({plain: true}));
+      return cb(null, profile);
+    })
+    .catch((err) => {
+      console.log('ERROR creating record: ', err);
+    })
   }
 ));
 
