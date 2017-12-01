@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const rgx = new RegExp(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-const match = process.env.HEROKU_POSTGRESQL_COBALT_URL ? process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) : 'postgres://nbcclctopnhiug:51f82baedd1bc40dbb63284137ea0186aeed9aaca6c18c79335c3290995b196d@ec2-23-21-155-53.compute-1.amazonaws.com:5432/dcf5u7ehd5s343'.match(rgx);
-// const match = 'postgres://kqjhzdmigbxlqb:1a58e5a4649b4085c130ad53fecf9030663afc2e1f76509f7f66ef77784189df@ec2-54-235-210-115.compute-1.amazonaws.com:5432/demruaiple0ldm'.match(rgx);
+// const match = process.env.HEROKU_POSTGRESQL_COBALT_URL ? process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) : 'postgres://nbcclctopnhiug:51f82baedd1bc40dbb63284137ea0186aeed9aaca6c18c79335c3290995b196d@ec2-23-21-155-53.compute-1.amazonaws.com:5432/dcf5u7ehd5s343'.match(rgx);
+const match = 'postgres://kqjhzdmigbxlqb:1a58e5a4649b4085c130ad53fecf9030663afc2e1f76509f7f66ef77784189df@ec2-54-235-210-115.compute-1.amazonaws.com:5432/demruaiple0ldm'.match(rgx);
 
 console.log('dbname ', match[5]);
 console.log('user ', match[1]);
@@ -42,7 +42,8 @@ const Users = sequelize.define('users', {
     avatarurl: Sequelize.TEXT,
     skinid: Sequelize.TEXT,
     usertype: Sequelize.TEXT,
-    pokemons: Sequelize.ARRAY(Sequelize.TEXT)
+    pokemons: Sequelize.ARRAY(Sequelize.TEXT),
+    wins: Sequelize.INTEGER
   }, 
   {
     timestamps: false
@@ -90,7 +91,7 @@ Pokemon.sync({logging: console.log});
 Moves.sync({logging: console.log});
 
 
-const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype) =>  {
+const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype, wins) =>  {
   return Users
     .findOne({ where: { username } })
     .then(userFound => {
@@ -104,14 +105,10 @@ const saveUser = (username, password, email, facebookid, avatarurl, skinid, user
         'Username Already Exists':
         'Email Already Exists';
       }
-      else return Users.create({ username, password, email, facebookid:0, avatarurl:'', skinid:'', usertype:'', pokemons:[] });
+      else return Users.create({ username, password, email, facebookid:0, avatarurl:'', skinid:'', usertype:'', pokemons:[], wins:0 });
     })
 };
 
-// Save Facebook credentials
-const saveFacebookUser = () => {
-  return Users.create({ facebook_id, username, email});
-};
 
 const savePokemon = (pokemonObj) => {
   console.log('IN SAVE POKEMON!');
@@ -137,7 +134,6 @@ const savePokemon = (pokemonObj) => {
 module.exports = {
   connection: sequelize,
   saveUser: saveUser,
-  saveFacebookUser: saveFacebookUser,
   Users: Users,
   Pokemon: Pokemon,
   Moves: Moves

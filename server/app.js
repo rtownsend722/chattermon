@@ -30,19 +30,21 @@ passport.use(new FacebookStrategy({
   clientID: '230138997524272', // || config.facebookAuth.clientID,
   clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672', // || config.facebookAuth.clientSecret,
   callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
+  // passReqToCallback: true
 },
   function(accessToken, refreshToken, profile, cb) {
     console.log('PROFILE: ', profile);
     db.Users.findOrCreate({
       where: {
-        username: profile.displayName,
-        password: '',
-        email: '',
-        facebookid: profile.id,
-        avatarurl: '',
-        skinid: '',
-        usertype: '',
-        pokemons: []
+        username: profile.displayName.split(' ')[0],
+        // password: '',
+        // email: '',
+        facebookid: profile.id
+        // avatarurl: '',
+        // skinid: '',
+        // usertype: '',
+        // pokemons: [],
+        // wins: 0
       }
     })
     .spread((user, created) => {
@@ -71,13 +73,12 @@ app.use(cookieParser());
 app.use(bodyParser());
 app.use(require('body-parser').urlencoded({extended: true}));
 
-// app.use(session({
-//   secret: 'odajs2iqw9asjxzascatsas22',
-//   resave: false,
-//   saveUninitialized: false,
-//   // cookie: { secure: true },
-// }));
-
+app.use(session({
+  secret: 'odajs2iqw9asjxzascatsas22',
+  resave: false,
+  saveUninitialized: false,
+  // cookie: { secure: true },
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -304,6 +305,7 @@ app.post('/signup', (req, resp) => {
         req.login({ user_id: newuser.id }, err => {
             if (err) throw err;
             console.log("NEW USER ID:", newuser.id);
+            console.log(newuser);
             req.session.username = username;
             req.session.loggedIn = true;
             let session = JSON.stringify(req.session);
