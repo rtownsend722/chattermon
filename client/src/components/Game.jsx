@@ -292,21 +292,22 @@ export default class Game extends Component {
 
     }
      else {
-      if(value === 'flee') {
+      if (value === 'flee') {
         this.commandHandlers().flee();
-        
       } else if (value === 'attack') {
+        //***TODO***^ value.split(' )[0] === 'attack'
         if (this.state.pokemon[0].health <= 0) {
           alert('you must choose a new pokemon, this one has fainted!');
         } else {
+          //attacking state determines if front or back sprite is rendered on GameView component
           this.setState({
             attacking: true
           })
+          //***TODO*** pass value.split(' ')[1] to below command handler
           setTimeout(() => this.commandHandlers().attack(), 300);  
         }
       } else if (value.split(' ')[0] === "choose") {
         this.commandHandlers().choose(value.split(' ')[1]); 
-
       } else {
         alert('invalid input!')
       }
