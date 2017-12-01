@@ -121,6 +121,16 @@ const savePokemon = (pokemonObj) => {
   });
 }
 
+const saveMove = (moveObj) => {
+  console.log('In save move!');
+  Move.create(moveObj).then((data) => {
+    console.log('Move saved to database!');
+  })
+  .catch((err) => {
+    console.log('Move saved error: ', err);
+  });
+}
+
 // Users
 
 //   .findAll()
