@@ -17,6 +17,8 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation } = require('../game-logic.js');
+const { fetchMoves, checkForMoves } = require('./helpers/pokeapi.js');
+const { saveMove } = require('../database/db.js');
 
 const dist = path.join(__dirname, '/../client/dist');
 
@@ -337,6 +339,12 @@ app.post('/signup', (req, resp) => {
     });
 })
 
+app.get('/moves', (req, resp) => {
+  // pokeapi check for moves function
+  checkForMoves(fetchMoves)
+  .then((data) => resp.sendStatus(200));
+    // takes a callback that is the fetch moves function
+});
 
 app.get('/user', (req, resp) => {
   resp.end(JSON.stringify({

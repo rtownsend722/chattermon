@@ -12,7 +12,7 @@
 //     of pokemon (in this case, less that the original 151 pokemon we wanted), then it excutes a callback i.e. fetchFirst151Pokemon.
 const axios = require('axios');
 const Promise = require('bluebird');
-const db = '../../database/db.js';
+const db = require('../../database/db.js');
 
 const fetchFirst151Pokemon = (callback, pokemonStoredSoFar) => {  
   let arrayOfRequests = []
@@ -66,12 +66,14 @@ const checkForPokemon = (callback) => {
 } 
 
 const checkForMoves = (callback) => {
+  console.log('DB!!!', db.Move);
   db.Move.findAll({})
     .then((data) => {
+      console.log('data in the .then after findall', data);
       if(data.length < 165) {
         console.log('There are less than 165 moves in the database!');
         console.log('Number of moves in the database: ', data.length);
-        callback(db.saveMove, data.length);
+        callback(data.length, db.saveMove);
       } else {
         console.log('All 165 moves are in the database!');
         console.log('Number of moves in the database: ', data.length);
@@ -79,15 +81,15 @@ const checkForMoves = (callback) => {
     })
 }
 
-const fetchMoves = (callback, moveNumber) => {
+const fetchMoves = (moveNumber, callback) => {
   let arrayOfRequests = [];
 
-  for(let i = moveNumber; i < moveNumber + 10; i++) {
+  for(let i = moveNumber; i < moveNumber + 1; i++) {
     arrayOfRequests.push(axios.get(`https://pokeapi.co/api/v2/move/${moveNumber}/`));
     console.log(`Request for move: ${i}`);
   }
 
-  Promise.all(arrayOfRequests);
+  Promise.all(arrayOfRequests)
   .then((arrOfPromises) => {
     arrOfPromises.forEach((move) => {
       console.log(`Shaping move with id: ${move.id}`);
