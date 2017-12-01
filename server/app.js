@@ -29,9 +29,10 @@ const dist = path.join(__dirname, '/../client/dist');
 passport.use(new FacebookStrategy({
   clientID: '230138997524272', // || config.facebookAuth.clientID,
   clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672', // || config.facebookAuth.clientSecret,
-  callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
+  callbackURL: 'http://localhost:3000/login/facebook/return', // || config.facebookAuth.callbackURL
+  passReqToCallback: true
 },
-  function(accessToken, refreshToken, profile, cb) {
+  function(req, accessToken, refreshToken, profile, cb) {
     console.log('PROFILE: ', profile);
     db.Users.findOrCreate({
       where: {
@@ -54,6 +55,21 @@ passport.use(new FacebookStrategy({
     })
   }
 ));
+
+    .then(newuser => {
+      if (newuser.dataValues) {
+        req.login({ user_id: newuser.id }, err => {
+            if (err) throw err;
+            console.log("NEW USER ID:", newuser.id);
+            req.session.username = username;
+            req.session.loggedIn = true;
+            let session = JSON.stringify(req.session);
+            resp.writeHead(201, {'Content-Type': 'app/json'});
+            resp.end(session);
+          });
+
+
+
 
 // Creates an object on the session (req.session.passport.user = {})
 passport.serializeUser(function(user, cb) {
