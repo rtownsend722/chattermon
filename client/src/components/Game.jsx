@@ -11,6 +11,7 @@ import GameForfeit from './GameForfeit.jsx';
 import GameState from './GameState.jsx';
 import Logo from './Logo.jsx';
 import css from '../styles.css';
+import debounce from 'lodash';
 
 import help from './../../../utils/helpers.js'
 
@@ -41,6 +42,7 @@ export default class Game extends Component {
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleChatInputSubmit = this.handleChatInputSubmit.bind(this);
     this.handleCommands = this.handleCommands.bind(this);
+    this.socketHandlers().opponentTyping = debounce(this.socketHandlers().opponentTyping.bind(this), 5000, {leading: true});
   }
 
   socketHandlers() {
@@ -71,6 +73,10 @@ export default class Game extends Component {
           opponentTyping: data.typingUser
         })
         console.log('opponent typing handler and user typing is ', this.state.opponentTyping);
+
+        //debounce eventually set state back to ''
+
+
       },
       playerInitialized: (data) => {
         this.setState({
