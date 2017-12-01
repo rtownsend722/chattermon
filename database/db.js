@@ -89,7 +89,7 @@ const Moves = sequelize.define('move', {
 
 Users.sync({logging: console.log});
 Pokemon.sync({logging: console.log});
-Moves.sync({logging: console.log});
+Moves.sync({logging: console.log, force: true});
 
 
 const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype, wins) =>  {
