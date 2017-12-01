@@ -226,6 +226,12 @@ const damageCalculation = (activePlayer, opponent) => {
   
 }
 
+//***TODO*** alternate moveDamageCalculation function
+//player info is taken from game state, move is a string taken from the db
+// const moveDamageCalculation = (activePlayer, opponent, move) => {
+//   const moveType = 
+// }
+
 
 module.exports = {
   calculateBaseHealth, 
