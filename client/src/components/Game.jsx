@@ -11,6 +11,7 @@ import GameForfeit from './GameForfeit.jsx';
 import GameState from './GameState.jsx';
 import Logo from './Logo.jsx';
 import css from '../styles.css';
+import debounce from 'lodash';
 
 import help from './../../../utils/helpers.js'
 
@@ -41,6 +42,7 @@ export default class Game extends Component {
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleChatInputSubmit = this.handleChatInputSubmit.bind(this);
     this.handleCommands = this.handleCommands.bind(this);
+    this.handleInactiveTyping = this.handleInactiveTyping.bind(this);
   }
 
   socketHandlers() {
@@ -71,6 +73,13 @@ export default class Game extends Component {
           opponentTyping: data.typingUser
         })
         console.log('opponent typing handler and user typing is ', this.state.opponentTyping);
+
+        setTimeout(this.handleInactiveTyping, 3000);
+      },
+      endTyping: (data) => {
+        this.setState({
+          opponentTyping: ''
+        })
       },
       playerInitialized: (data) => {
         this.setState({
@@ -162,8 +171,8 @@ export default class Game extends Component {
           socket.on('gamefull', message => alert(message)); 
           socket.on('chat message', this.socketHandlers().handleChat); 
           socket.on('user typing', this.socketHandlers().handleTyping);
-          // socket.on('show typing', (data) => console.log('received show typing event from server with user and game id', data.gameid, ' ', data.typingUser))
           socket.on('show typing', this.socketHandlers().opponentTyping);
+          socket.on('end typing', this.socketHandlers().endTyping);
           socket.on('player', this.socketHandlers().playerInitialized); 
           socket.on('ready', this.socketHandlers().handleReady); 
           socket.on('attack processed', this.socketHandlers().attackProcess); 
@@ -198,6 +207,13 @@ export default class Game extends Component {
         chatInput: ''
       });
     }
+  }
+
+  handleInactiveTyping() {
+    console.log('3 seconds have elapsed with no typing');
+    this.state.socket.emit('inactive typing', {
+        gameid: this.props.match.params.gameid, 
+    });
   }
 
   commandHandlers() {

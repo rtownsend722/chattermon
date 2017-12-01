@@ -190,6 +190,16 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('inactive typing', (data) => {
+    console.log('REACHED inactive typing on server!!!!!!!!');
+    
+    io.to(data.gameid).emit('end typing', {
+      gameid: data.gameid,
+      typingUser: data.typingUser
+    });
+  });
+
+
   /* socket.on('attack') / socket.on('switch')
 
   These two functions both involve updating the game's state in some way and re-sending it back down to the client once it has been fully processed. Different events are emitted back to the client based on the state of the game, and can be extended to add more complexity into the game. 
