@@ -65,14 +65,6 @@ const checkForPokemon = (callback) => {
     })
 } 
 
-const insertMovesForAPokemon = (pokemon, callback) => {
-  db.Pokemon.findOne({
-    where: {
-      name: pokemon
-    }
-  })
-}
-
 const fetchMoves = (callback, pokemonNumber) => {
   
   axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonNumber}/`)
