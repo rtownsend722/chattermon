@@ -65,6 +65,20 @@ const checkForPokemon = (callback) => {
     })
 } 
 
+const checkForMoves = (callback) => {
+  db.Move.findAll({})
+    .then((data) => {
+      if(data.length < 165) {
+        console.log('There are less than 165 moves in the database!');
+        console.log('Number of moves in the database: ', data.length);
+        callback(db.saveMove, data.length);
+      } else {
+        console.log('All 165 moves are in the database!');
+        console.log('Number of moves in the database: ', data.length);
+      }
+    })
+}
+
 const fetchMoves = (callback, moveNumber) => {
   let arrayOfRequests = [];
 
@@ -93,5 +107,6 @@ const fetchMoves = (callback, moveNumber) => {
 module.exports = {
   fetchFirst151Pokemon: fetchFirst151Pokemon,
   checkForPokemon: checkForPokemon,
-  fetchMoves: fetchMoves
+  fetchMoves: fetchMoves,
+  checkForMoves: checkForMoves
 }
