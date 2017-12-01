@@ -108,6 +108,7 @@ export default class Signup extends Component {
           alert('This username already exists, try again!');
         }
         else {
+          // if successful redirect to /welcome
           this.props.history.replace("/welcome");
         }
       })
