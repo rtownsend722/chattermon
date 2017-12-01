@@ -34,7 +34,7 @@ passport.use(new FacebookStrategy({
   callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
   // passReqToCallback: true
 },
-  function(accessToken, refreshToken, profile, cb) {
+  function(accessToken, refreshToken, profile, done) {
     process.nextTick(function() {
       // console.log('PROFILE FROM FACEBOOK: ', profile);
       return db.Users.findOrCreate({
@@ -53,7 +53,10 @@ passport.use(new FacebookStrategy({
       .spread((user, created) => {
         console.log('User created with', user.get({plain: true}));
         // console.log('user in spread: ', user);
-        // return cb(null, user);
+
+        // LEFT OFF HERE WITH ANTHONY - deleted return
+        console.log(done);
+        done(null, user);
       })
       .catch((err) => {
         console.log('ERROR creating record: ', err);
@@ -62,7 +65,7 @@ passport.use(new FacebookStrategy({
   }
 ));
 
-//Determines data of user object to be stored in session
+// Determines data of user object to be stored in session
 // Looks like: req.session.passport.user = {username: 'username'}
 passport.serializeUser(function(user, done) {
   done(null, user.id);
@@ -98,11 +101,11 @@ app.use(session({
   // cookie: { secure: true },
 }));
 
-// Peer into express session
-app.use(function printSession(req, res, next) {
-  console.log('req session', req.session);
-  return next();
-});
+// // Peer into express session
+// app.use(function printSession(req, res, next) {
+//   console.log('req session', req.session);
+//   return next();
+// });
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -203,6 +206,29 @@ io.on('connection', (socket) => {
 
     io.to(data.gameid).emit('turn move', game);     
     io.to(data.gameid).emit('game forfeited', { winner: game[opponent].name, loser: game[player].name });
+
+    const winner = game[opponent].name;
+
+    db.Users.findOne({
+      where: {
+          username: winner
+        }
+      })
+      .then(founduser => {
+        console.log('FOUND USER: ', founduser);
+        db.Users.update(
+          {wins: founduser.wins + 1}, 
+          {where: {username: founduser.username}}, 
+        {
+          fields: ['wins']
+        })
+        .then(updateduser => {
+          console.log('UPDATED USER ', updateduser);
+        })
+        .catch(error => {
+        })
+      });
+
   });
 
   socket.on('user typing', (data) => {
@@ -246,8 +272,29 @@ io.on('connection', (socket) => {
       game[opponent].pokemon[2].health <= 0
     ) {
       game[opponent].pokemon[0].health = 0; 
-      io.to(data.gameid).emit('turn move', game);      
+      io.to(data.gameid).emit('turn move', game);
       io.to(data.gameid).emit('gameover', { name: game[player].name });
+      const winner = game[player].name;
+      db.Users.findOne({
+        where: {
+          username: winner
+        }
+      })
+      .then(founduser => {
+        console.log('FOUND USER: ', founduser);
+        db.Users.update(
+          {wins: founduser.wins + 1}, 
+          {where: {username: founduser.username}}, 
+        {
+          fields: ['wins']
+        })
+        .then(updateduser => {
+          console.log('UPDATED USER ', updateduser);
+        })
+        .catch(error => {
+        })
+      });
+
     } else if (game[opponent].pokemon[0].health <= 0) {
       game[opponent].pokemon[0].health = 0; 
       game.playerTurn = opponent;
@@ -334,9 +381,12 @@ app.post('/signup', (req, resp) => {
   const email = req.body.email;
   // hash password with saltRounds (10)
   bcrypt.hash(password, saltRounds)
-    .then(hash => db.saveUser(username, hash, email))
+    .then(hash => 
+      db.saveUser(username, hash, email)
+    )
     .then(newuser => {
       if (newuser.dataValues) {
+        // hitting an error here
         req.login({ user_id: newuser.id }, err => {
             if (err) throw err;
             console.log("NEW USER ID:", newuser.id);
@@ -384,6 +434,7 @@ app.get('/logout', (req, resp) => {
     resp.redirect('/login');
   });
 });
+
 
 /* =============================================================== */
 
