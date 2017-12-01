@@ -2,7 +2,9 @@
 
 ## Team
 
-  - Rebecca Townsend | Anne Pruett | Amanda Bozigian
+  - [Rebecca Townsend](https://github.com/rtownsend722)
+  - [Anne Pruett](https://github.com/ladyshaitan)
+  - [Amanda Bozigian](https://github.com/amboz)
 
 ## Table of Contents
 
@@ -21,7 +23,7 @@ Chattermon is a terminal based Pokemon battle system. Players create an account,
 
 ## Usage
 
-Play it live on https://chattermon-staging.herokuapp.com
+Play it live on https://chattermonv2.herokuapp.com/
 
 ## Requirements
 
