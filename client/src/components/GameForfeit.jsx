@@ -11,8 +11,8 @@ const GameForfeit = (props) => {
 	        <div className={css.winnerPokeView}>
 	          {props.pokemon.map(poke => {
 	            return (
-	              <div>
-	                <Pokemon key={poke.name} sprite={poke.sprites.front_default} />
+	              <div key={poke.name}>
+	                <Pokemon sprite={poke.sprites.front_default} />
 	                <h5>{poke.name}</h5>
 	                <h5>{poke.health} / {poke.initialHealth}</h5>
 	              </div>
