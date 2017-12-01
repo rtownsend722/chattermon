@@ -71,7 +71,7 @@ const Pokemon = sequelize.define('pokemon', {
   }
 );
 
-const Moves = sequelize.define('move', {
+const Move = sequelize.define('move', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
@@ -89,7 +89,7 @@ const Moves = sequelize.define('move', {
 
 Users.sync({logging: console.log});
 Pokemon.sync({logging: console.log});
-Moves.sync({logging: console.log});
+Move.sync({logging: console.log});
 
 
 const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype, wins) =>  {
@@ -147,7 +147,8 @@ module.exports = {
   saveUser: saveUser,
   Users: Users,
   Pokemon: Pokemon,
-  Moves: Moves
+  Move: Move,
+  saveMove: saveMove
 }
 
 // POSTGRES WITHOUT SEQUELIZE
