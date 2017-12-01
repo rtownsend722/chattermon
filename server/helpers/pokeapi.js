@@ -63,7 +63,27 @@ const checkForPokemon = (callback) => {
         console.log('NUMBER POKES IN DB: ', data.length)
       }
     })
-  }
+} 
+
+const insertMovesForAPokemon = (pokemon, callback) => {
+  db.Pokemon.findOne({
+    where: {
+      name: pokemon
+    }
+  })
+}
+
+const fetchMoves = (callback, pokemonNumber) => {
+  
+  axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonNumber}/`)
+  const moves = [];
+  .then((pokemon) => {
+    pokemon.moves.forEach((move) => {
+      moves.push(move.name); // capture move names to store in pokemon's move column
+
+    })
+  })
+}
 
 module.exports = {
   fetchFirst151Pokemon: fetchFirst151Pokemon,
