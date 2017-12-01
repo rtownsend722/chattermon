@@ -43,7 +43,8 @@ passport.use(new FacebookStrategy({
         avatarurl: '',
         skinid: '',
         usertype: '',
-        pokemons: []
+        pokemons: [],
+        wins: 0
       }
     })
     .spread((user, created) => {
@@ -55,19 +56,6 @@ passport.use(new FacebookStrategy({
     })
   }
 ));
-
-    .then(newuser => {
-      if (newuser.dataValues) {
-        req.login({ user_id: newuser.id }, err => {
-            if (err) throw err;
-            console.log("NEW USER ID:", newuser.id);
-            req.session.username = username;
-            req.session.loggedIn = true;
-            let session = JSON.stringify(req.session);
-            resp.writeHead(201, {'Content-Type': 'app/json'});
-            resp.end(session);
-          });
-
 
 
 
