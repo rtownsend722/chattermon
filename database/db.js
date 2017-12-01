@@ -76,10 +76,11 @@ const Moves = sequelize.define('move', {
     type: Sequelize.INTEGER,
     primaryKey: true,
     unique: true
-  },  
-  name: Sequelize.STRING,
+  },
+  type: Sequelize.TEXT,
   power: Sequelize.INTEGER,
-  accuracy: Sequelize.INTEGER
+  accuracy: Sequelize.INTEGER,
+  name: Sequelize.STRING
 },
   {
     timestamps: false
