@@ -37,8 +37,10 @@ export default class Welcome extends Component {
       newGameId: makeGameId()
     });
 
+    // 
     axios('/user')
     .then(({ data }) => {
+      console.log('in axios user call with data: ', data);
       if (data.username) {
         const username = data.username;
         this.setState({

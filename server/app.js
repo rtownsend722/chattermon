@@ -34,44 +34,63 @@ passport.use(new FacebookStrategy({
   callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
   // passReqToCallback: true
 },
-  function(accessToken, refreshToken, profile, cb) {
-    console.log('PROFILE: ', profile);
-    db.Users.findOrCreate({
-      where: {
-        username: profile.displayName.split(' ')[0],
-        // password: '',
-        // email: '',
-        facebookid: profile.id
-        // avatarurl: '',
-        // skinid: '',
-        // usertype: '',
-        // pokemons: [],
-        // wins: 0
-      }
-    })
-    .spread((user, created) => {
-      console.log('User created with', user.get({plain: true}));
-      return cb(null, profile);
-    })
-    .catch((err) => {
-      console.log('ERROR creating record: ', err);
+  function(accessToken, refreshToken, profile, done) {
+    process.nextTick(function() {
+      // console.log('PROFILE FROM FACEBOOK: ', profile);
+      return db.Users.findOrCreate({
+        where: {
+          username: profile.displayName.split(' ')[0],
+          // password: '',
+          // email: '',
+          facebookid: profile.id
+          // avatarurl: '',
+          // skinid: '',
+          // usertype: '',
+          // pokemons: [],
+          // wins: 0
+        }
+      })
+      .spread((user, created) => {
+        console.log('User created with', user.get({plain: true}));
+        // console.log('user in spread: ', user);
+
+        // LEFT OFF HERE WITH ANTHONY - deleted return
+        console.log(done);
+        done(null, user);
+      })
+      .catch((err) => {
+        console.log('ERROR creating record: ', err);
+      })
     })
   }
 ));
 
-// Creates an object on the session (req.session.passport.user = {})
-passport.serializeUser(function(user, cb) {
-  cb(null, user);
+// Determines data of user object to be stored in session
+// Looks like: req.session.passport.user = {username: 'username'}
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
 });
 
-// uses provided user to fetch req.user
-passport.deserializeUser(function(obj, cb) {
-  cb(null, obj);
+// Matches key (username) to key in session object in subsequent requests
+// The fetched object is attached to the request object as req.user
+passport.deserializeUser(function(id, done) {
+  return db.Users.findOne({
+    where : {
+      id: id
+    }
+  })
+  .then(foundUser => {
+    console.log('in deser');
+    done(null, id);
+  })
+  .catch((err) => {
+    console.log('ERROR deserializing record: ', err);
+  })
 });
 
 app.use(express.static(dist));
 
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(bodyParser());
 app.use(require('body-parser').urlencoded({extended: true}));
 
@@ -81,6 +100,12 @@ app.use(session({
   saveUninitialized: false,
   // cookie: { secure: true },
 }));
+
+// // Peer into express session
+// app.use(function printSession(req, res, next) {
+//   console.log('req session', req.session);
+//   return next();
+// });
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -181,6 +206,29 @@ io.on('connection', (socket) => {
 
     io.to(data.gameid).emit('turn move', game);     
     io.to(data.gameid).emit('game forfeited', { winner: game[opponent].name, loser: game[player].name });
+
+    const winner = game[opponent].name;
+
+    db.Users.findOne({
+      where: {
+          username: winner
+        }
+      })
+      .then(founduser => {
+        console.log('FOUND USER: ', founduser);
+        db.Users.update(
+          {wins: founduser.wins + 1}, 
+          {where: {username: founduser.username}}, 
+        {
+          fields: ['wins']
+        })
+        .then(updateduser => {
+          console.log('UPDATED USER ', updateduser);
+        })
+        .catch(error => {
+        })
+      });
+
   });
 
   socket.on('user typing', (data) => {
@@ -224,8 +272,29 @@ io.on('connection', (socket) => {
       game[opponent].pokemon[2].health <= 0
     ) {
       game[opponent].pokemon[0].health = 0; 
-      io.to(data.gameid).emit('turn move', game);      
+      io.to(data.gameid).emit('turn move', game);
       io.to(data.gameid).emit('gameover', { name: game[player].name });
+      const winner = game[player].name;
+      db.Users.findOne({
+        where: {
+          username: winner
+        }
+      })
+      .then(founduser => {
+        console.log('FOUND USER: ', founduser);
+        db.Users.update(
+          {wins: founduser.wins + 1}, 
+          {where: {username: founduser.username}}, 
+        {
+          fields: ['wins']
+        })
+        .then(updateduser => {
+          console.log('UPDATED USER ', updateduser);
+        })
+        .catch(error => {
+        })
+      });
+
     } else if (game[opponent].pokemon[0].health <= 0) {
       game[opponent].pokemon[0].health = 0; 
       game.playerTurn = opponent;
@@ -261,6 +330,8 @@ app.get('/login/facebook',
   passport.authenticate('facebook'));
 
 // this route redirects user to /welcome after approval
+
+// Theoritically, this is redirecting to /welcome which makes a request to /user
 app.get('/login/facebook/return',
   passport.authenticate('facebook', {successRedirect: '/welcome',
     failureRedirect: '/login'})
@@ -295,8 +366,7 @@ app.post('/login', (req, resp) => {
       resp.end('Passwords Do Not Match');
     }
     else {
-      // not sure where req.session comes from BUT
-      // add set username and logged in properties
+      // add username and logged in properties to session
       req.session.username = username;
       req.session.loggedIn = true;
       resp.redirect('/welcome');
@@ -311,17 +381,22 @@ app.post('/signup', (req, resp) => {
   const email = req.body.email;
   // hash password with saltRounds (10)
   bcrypt.hash(password, saltRounds)
-    .then(hash => db.saveUser(username, hash, email))
+    .then(hash => 
+      db.saveUser(username, hash, email)
+    )
     .then(newuser => {
       if (newuser.dataValues) {
+        // hitting an error here
         req.login({ user_id: newuser.id }, err => {
             if (err) throw err;
             console.log("NEW USER ID:", newuser.id);
             console.log(newuser);
+            // add credentials to session
             req.session.username = username;
             req.session.loggedIn = true;
             let session = JSON.stringify(req.session);
             resp.writeHead(201, {'Content-Type': 'app/json'});
+            // send session back to client
             resp.end(session);
           });
       }
@@ -359,6 +434,7 @@ app.get('/logout', (req, resp) => {
     resp.redirect('/login');
   });
 });
+
 
 /* =============================================================== */
 
