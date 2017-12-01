@@ -2,7 +2,7 @@
 
 ## Team
 
-  - Rebecca Townsend | Michael Cooper | Anne Pruett | Amanda Bozigian
+  - Rebecca Townsend | Anne Pruett | Amanda Bozigian
 
 ## Table of Contents
 
@@ -32,14 +32,14 @@ Play it live on https://chattermon-staging.herokuapp.com
 
 ## Development
 
-1. Fork the repo from greenfield-jupiter/greenfield-project on github.
+1. Fork the repo from goplanetx/chattermon on github.
 2. Clone down your fork
   ```sh
-    git clone https://github.com/<username>/greenfield-project.git
+    git clone https://github.com/<username>/chattermon.git
   ```
 2. Move into the repo after its been cloned onto your machine by typing the following command.
   ```sh
-    cd greenfield-project/
+    cd chattermon/
   ```
 3. Follow the instructions in the 'Installing Dependencies' section.
 
@@ -65,7 +65,7 @@ The `start-dev` npm script automatically generates a `bundle.js` file as you dev
 
 ### Roadmap
 
-View the project roadmap [here](https://docs.google.com/document/d/1cdVM25fZtM5FbvYwwBRCHvTYupI5Z7EcVNIZzA4A5s8/edit)
+View the project roadmap [here](https://docs.google.com/document/d/1mBfAHCNSak541w8oDZowPDuxSAd0IjmPGGBrvBIoqh0/edit)
 
 
 ## Contributing
