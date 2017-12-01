@@ -40,14 +40,7 @@ passport.use(new FacebookStrategy({
       return db.Users.findOrCreate({
         where: {
           username: profile.displayName.split(' ')[0],
-          // password: '',
-          // email: '',
           facebookid: profile.id
-          // avatarurl: '',
-          // skinid: '',
-          // usertype: '',
-          // pokemons: [],
-          // wins: 0
         }
       })
       .spread((user, created) => {
