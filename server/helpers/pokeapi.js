@@ -65,6 +65,7 @@ const checkForPokemon = (callback) => {
     })
 } 
 
+
 const checkForMoves = (callback) => {
   console.log('DB!!!', db.Move);
   db.Move.findAll({})
@@ -81,14 +82,14 @@ const checkForMoves = (callback) => {
     })
 }
 
-const fetchMoves = (moveNumber, callback) => {
+
+const fetchMoves = (callback, moveNumber) => {
   let arrayOfRequests = [];
 
-  for(let i = moveNumber; i < moveNumber + 1; i++) {
+  for(let i = moveNumber; i < moveNumber + 10; i++) {
     arrayOfRequests.push(axios.get(`https://pokeapi.co/api/v2/move/${moveNumber}/`));
     console.log(`Request for move: ${i}`);
   }
-
   Promise.all(arrayOfRequests)
   .then((arrOfPromises) => {
     arrOfPromises.forEach((move) => {
