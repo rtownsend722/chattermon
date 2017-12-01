@@ -65,27 +65,33 @@ const checkForPokemon = (callback) => {
     })
 } 
 
-const insertMovesForAPokemon = (pokemon, callback) => {
-  db.Pokemon.findOne({
-    where: {
-      name: pokemon
-    }
-  })
-}
+const fetchMoves = (callback, moveNumber) => {
+  let arrayOfRequests = [];
 
-const fetchMoves = (callback, pokemonNumber) => {
-  
-  axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonNumber}/`)
-  const moves = [];
-  .then((pokemon) => {
-    pokemon.moves.forEach((move) => {
-      moves.push(move.name); // capture move names to store in pokemon's move column
+  for(let i = moveNumber; i < moveNumber + 10; i++) {
+    arrayOfRequests.push(axios.get(`https://pokeapi.co/api/v2/move/${moveNumber}/`));
+    console.log(`Request for move: ${i}`);
+  }
 
+  Promise.all(arrayOfRequests);
+  .then((arrOfPromises) => {
+    arrOfPromises.forEach((move) => {
+      console.log(`Shaping move with id: ${move.id}`);
+      moveObj = {};
+      moveObj.id = move.id;
+      moveObj.name = move.name;
+      moveObj.power = move.power;
+      moveObj.accuracy = move.accuracy;
+      moveObj.type = move.type.name;
+      console.log('Move object:', moveObj);
+      callback(moveObj);
     })
   })
+  .catch((err) => console.log('Move fetch error: ', err));
 }
 
 module.exports = {
   fetchFirst151Pokemon: fetchFirst151Pokemon,
-  checkForPokemon: checkForPokemon
+  checkForPokemon: checkForPokemon,
+  fetchMoves: fetchMoves
 }
