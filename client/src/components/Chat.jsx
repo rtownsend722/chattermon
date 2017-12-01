@@ -21,11 +21,12 @@ export default class Chat extends Component {
     this.state = {
       shouldScroll: true,
       showNewMessageBanner: false,
-      userTyping: ''
+      userTyping: '',
+      showTypingBanner: false
     };
 
     this.handleChatInputSubmit = this.handleChatInputSubmit.bind(this);
-    this.handleNewUserTyping = this.handleNewUserTyping.bind(this);
+    // this.handleNewUserTyping = this.handleNewUserTyping.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -59,35 +60,84 @@ export default class Chat extends Component {
       if (this.state.shouldScroll) {
         messageContainer.scrollTop = messageContainer.scrollHeight;
       }
+
+      // this.setState({
+      //   showTypingBanner: !this.state.showTypingBanner
+      // })
+
+      //one a new messages comes in, trigger handler on game component
+        //to update state of opponent typing to '' and remove banner
     }
 
+    // check to see if prop indicating which person is typing has changed
+      //if so, invoke handleUserTyping with value of user typing
     if (prevProps.opponentTyping !== this.props.opponentTyping) {
-      this.handleNewUserTyping(this.props.opponentTyping);
+      console.log('user typing is ', this.props.opponentTyping);
+      //if the opponent typing is blank (triggered by enter or inactivity)
+      if (this.props.opponentTyping === '') {
+        //change state and do not show the banner
+        this.setState({
+          userTyping: '',
+          showTypingBanner: false
+        })
+      } else {
+        //change the state to the correct user, keep banner up
+        this.setState({
+          userTyping: this.props.opponentTyping,
+          showTypingBanner: true
+        })
+      // }
+      // this.handleNewUserTyping(this.props.opponentTyping);
+    }
+  }
+  }
+
+  throttle(func, ms) {
+    let canRun = true;
+    return () => {
+      if (canRun) {
+        canRun = false;
+        setTimeout(() => {canRun=true;}, ms);
+        return func.apply(this, arguments)
+      }
+
+      return null;
     }
   }
 
-  handleChatInputSubmit(e) {
+  handleChatInputSubmit (e) {
     if (e.keyCode === 13) {
       let messageContainer = document.getElementsByClassName(css.messageContainer)[0];
+      // this.setState({
+      //   userTyping: '',
+      //   showTypingBanner: false
+      // })
       this.props.handleChatInputSubmit(e);
       messageContainer.scrollTop = messageContainer.scrollHeight;
+    } else {
+    //   this.throttle(this.props.handleTyping, 1000);
+    //   // this.props.handleTyping();
+    // }
+
+      this.props.handleTyping();
     }
   }
 
-  handleNewUserTyping(userTyping){
-    console.log('user typing is ', userTyping);
-    this.setState({
-      userTyping: userTyping
-    })
-  }
+  // update state with new value of user typing
+  // handleNewUserTyping(userTyping){
+  //   console.log('user typing is ', userTyping);
+  //   this.setState({
+  //     userTyping: userTyping
+  //   })
+  // }
 
   render() {
     return (
       <div className={css.chatContainer}>
         <div className={css.messageContainer}>
-          {this.props.messageArray.map(message => {
+          {this.props.messageArray.map((message, i) => {
             return (
-              <div className={css.messageInstance}>
+              <div className={css.messageInstance} key={i}>
                 <div className={css.messageUsername}>{message.name}</div>
                 <div className={css.messageText}>{message.text}</div>
               </div>
@@ -97,10 +147,13 @@ export default class Chat extends Component {
         <div className={css.messageInputContainer}>
           {/* for future styling: https://alistapart.com/article/expanding-text-areas-made-elegant */}
           <div className={css.newMessageAlertBanner} style={{display: this.state.showNewMessageBanner ? 'block' : 'none' }}>New Message</div>
-          <TextareaAutosize className={css.messageInput} value={this.props.chatInput} placeholder="gotta chat em all..." onKeyDown={this.handleChatInputSubmit} onChange={(e) => this.props.handleInputChange(e, 'chatInput')} onKeyUp={this.props.handleTyping} />
-          <div className={css.userTypingContainer} style={{display: 'float'}}>{this.state.userTyping} is typing...</div>
+          <TextareaAutosize className={css.messageInput} value={this.props.chatInput} placeholder="gotta chat em all..." onKeyDown={this.handleChatInputSubmit} onChange={(e) => this.props.handleInputChange(e, 'chatInput')} />
+          {this.state.showTypingBanner && <img className={css.userTypingImg} src="https://www.washingtonpost.com/graphics/entertainment/norm-macdonald/img/typing.gif"/>}
+          <div className={css.userTypingContainer} style={{display: this.state.showTypingBanner ? 'block': 'none'}}>{this.state.userTyping}</div>
         </div>
       </div>
     )
   }
 }
+
+ // {this.state.showTypingBanner && <img className='http://www.slate.com/content/dam/slate/blogs/browbeat/2011/09/29/hugo_chavez_caption_co

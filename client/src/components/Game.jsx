@@ -46,17 +46,18 @@ export default class Game extends Component {
   socketHandlers() {
     return {
       handleChat: (message) => {
-      var messageInstance = {
-          name: message.name,
-          text: message.text
+        var messageInstance = {
+            name: message.name,
+            text: message.text
         }
         this.setState(prevState => {
           return {
-            messageArray: prevState.messageArray.concat(messageInstance)
+            messageArray: prevState.messageArray.concat(messageInstance),
+            opponentTyping: ''
           }
         })
       },
-      handleTyping: (data) => {
+      handleTyping: () => {
         console.log('emitting initial user typing event and user is ', this.state.name);
         let context = this;
 

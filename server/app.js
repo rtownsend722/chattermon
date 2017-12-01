@@ -166,6 +166,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('chat message', (data) => {
+    // console.log('data chat message socket event is ', data);
     io.to(data.gameid).emit('chat message', data)
   });
 
