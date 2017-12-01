@@ -10,8 +10,9 @@ const bcrypt = Promise.promisifyAll(require('bcrypt'));
 const saltRounds = 10;
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const passport = require('passport'),
- FacebookStrategy = require('passport-facebook').Strategy;
+const passport = require('passport');
+const FacebookStrategy = require('passport-facebook').Strategy;
+/*====IMPORT CONFIG FOR LOCAL DEV ONLY - POPULATE WITH YOUR OWN FACEBOOK AUTHENTICATION CREDENTIALS====*/
 // const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
@@ -23,16 +24,61 @@ const dist = path.join(__dirname, '/../client/dist');
 
 /* ======================== MIDDLEWARE ======================== */
 
-app.use(bodyParser());
+/*===NOT INTEGRATED====*/
+/*===3rd PARTY AUTHENTICATION====*/
+passport.use(new FacebookStrategy({
+  clientID: '230138997524272', // || config.facebookAuth.clientID,
+  clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672', // || config.facebookAuth.clientSecret,
+  callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
+},
+  function(accessToken, refreshToken, profile, cb) {
+    console.log('PROFILE: ', profile);
+    db.Users.findOrCreate({
+      where: {
+        username: profile.displayName,
+        password: '',
+        email: '',
+        facebookid: profile.id,
+        avatarurl: '',
+        skinid: '',
+        usertype: '',
+        pokemons: []
+      }
+    })
+    .spread((user, created) => {
+      console.log('User created with', user.get({plain: true}));
+      return cb(null, profile);
+    })
+    .catch((err) => {
+      console.log('ERROR creating record: ', err);
+    })
+  }
+));
+
+// Creates an object on the session (req.session.passport.user = {})
+passport.serializeUser(function(user, cb) {
+  cb(null, user);
+});
+
+// uses provided user to fetch req.user
+passport.deserializeUser(function(obj, cb) {
+  cb(null, obj);
+});
+
 app.use(express.static(dist));
 
 app.use(cookieParser());
-app.use(session({
-  secret: 'odajs2iqw9asjxzascatsas22',
-  resave: false,
-  saveUninitialized: false,
-  // cookie: { secure: true },
-}));
+app.use(bodyParser());
+app.use(require('body-parser').urlencoded({extended: true}));
+
+// app.use(session({
+//   secret: 'odajs2iqw9asjxzascatsas22',
+//   resave: false,
+//   saveUninitialized: false,
+//   // cookie: { secure: true },
+// }));
+
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -196,41 +242,15 @@ io.on('connection', (socket) => {
 
 /* =============== AUTHENTICATION ROUTES / LOGIC ================= */
 
-/*===NOT INTEGRATED====*/
-/*===3rd PARTY AUTHENTICATION====*/
+// this route redirects user to FB for auth
+app.get('/login/facebook',
+  passport.authenticate('facebook'));
 
-// passport.use(new FacebookStrategy({
-//   clientID: config.FACEBOOK_APP_ID,
-//   clientSecret: config.FACEBOOK_APP_SECRET,
-//   callbackURL: 'http://localhost:3000/login/facebook/return'
-// },
-//   function(accessToken, refreshToken, profile, done) {
-//     //check db.Users for facebook.id matching profile.id
-//     db.Users.findOne({ 'facebook.id' : profile.id }, function(err, user) {
-//       if (err) {
-//         return done(err);
-//       } 
-//       // if no user found, create one
-//       if (!user) {
-//         db.saveFacebookUser(profile.displayName, profile.id, profile.emails[0].value);
-//       // if user matched, done
-//       } else {
-//         return done(null, user);
-//       }
-//     });
-//   }
-// ));
-
-
-// // this route redirects user to FB for auth
-// app.get('/login/facebook', passport.authenticate('facebook'));
-
-// // this route redirects user to /welcome after approval
-// app.get('login/facebook/return',
-//   passport.authenticate('facebook', {failureRedirect: '/login'}),
-//   function(req, res) {
-//     res.redirect('/welcome');
-//   });
+// this route redirects user to /welcome after approval
+app.get('/login/facebook/return',
+  passport.authenticate('facebook', {successRedirect: '/welcome',
+    failureRedirect: '/login'})
+  );
 
 /*======================================*/
 
@@ -304,15 +324,6 @@ app.post('/signup', (req, resp) => {
     });
 })
 
-// Creates an object on the session (req.session.passport.user = {})
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
-
-// uses provided user to fetch req.user
-passport.deserializeUser(function(user, done) {
-  done(null, user);
-});
 
 app.get('/user', (req, resp) => {
   resp.end(JSON.stringify({

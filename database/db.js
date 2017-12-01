@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const rgx = new RegExp(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-// const match = process.env.HEROKU_POSTGRESQL_COBALT_URL ? process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) : 'postgres://nbcclctopnhiug:51f82baedd1bc40dbb63284137ea0186aeed9aaca6c18c79335c3290995b196d@ec2-23-21-155-53.compute-1.amazonaws.com:5432/dcf5u7ehd5s343'.match(rgx);
-const match = 'postgres://kqjhzdmigbxlqb:1a58e5a4649b4085c130ad53fecf9030663afc2e1f76509f7f66ef77784189df@ec2-54-235-210-115.compute-1.amazonaws.com:5432/demruaiple0ldm'.match(rgx);
+const match = process.env.HEROKU_POSTGRESQL_COBALT_URL ? process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) : 'postgres://nbcclctopnhiug:51f82baedd1bc40dbb63284137ea0186aeed9aaca6c18c79335c3290995b196d@ec2-23-21-155-53.compute-1.amazonaws.com:5432/dcf5u7ehd5s343'.match(rgx);
+// const match = 'postgres://kqjhzdmigbxlqb:1a58e5a4649b4085c130ad53fecf9030663afc2e1f76509f7f66ef77784189df@ec2-54-235-210-115.compute-1.amazonaws.com:5432/demruaiple0ldm'.match(rgx);
 
 console.log('dbname ', match[5]);
 console.log('user ', match[1]);
@@ -38,7 +38,7 @@ const Users = sequelize.define('users', {
     username: Sequelize.STRING,
     password: Sequelize.STRING,
     email: Sequelize.STRING,
-    facebookid: Sequelize.INTEGER,
+    facebookid: Sequelize.TEXT,
     avatarurl: Sequelize.TEXT,
     skinid: Sequelize.TEXT,
     usertype: Sequelize.TEXT,
