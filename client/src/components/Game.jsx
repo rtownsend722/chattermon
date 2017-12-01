@@ -130,21 +130,29 @@ export default class Game extends Component {
         }
       },
       gameOver: (data) => {
+        console.log('game over data: ', data);
+        console.log('game over winner: ', data.name);
+
         this.setState({
           winner: data.name,
           gameOver: true,
           isActive: false
         }); 
+
         setTimeout(() => this.props.history.replace("/"), 20000); 
       },
 
       forfeit: (data) => {
+        console.log('forfeit data: ', data);
+        console.log('forfeit winner: ', data.winner);
+        console.log('forfeit loser: ', data.loser);
         this.setState({
           winner: data.winner,
           loser: data.loser,
           isActive: false,
           forfeited: true
         });
+
         setTimeout(() => this.props.history.replace("/"), 20000); 
       }
     }
