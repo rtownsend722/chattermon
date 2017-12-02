@@ -84,7 +84,7 @@ export default class Welcome extends Component {
           <div className={css.logo}>Chattermon</div>
           <div className={css.navBarLinksContainer}>
             
-          <div className={css.navBarLink} ><a className={css.navBarLinkA} href='/logout'>Logout</a></div>
+          <div className={css.navBarLink}><a className={css.navBarLinkA} href='/logout'>Logout</a></div>
 
           </div>
         </div>

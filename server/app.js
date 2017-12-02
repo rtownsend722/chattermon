@@ -92,8 +92,14 @@ passport.deserializeUser(function(user, done) {
 });
 
 const generateHash = function(password) {
-  return bcrypt.hash(password, 10);
+  return bcrypt.hashSync(password, 10);
 }
+
+const isValidPassword = function(providedPass, storedHash) {
+  return bcrypt.compareSync(providedPass, storedHash);
+}
+
+const salt = 10;
 
 //============LOCAL STRATEGIES=============//
 
@@ -116,24 +122,24 @@ function(req, username, password, done) {
         done(null, false);
       } else {
         //may need to promisify in some weird way
-        generateHash(password, 10)
-        .then(hash => {
-          db.Users.create({
-            username: username, 
-            password: hash, 
-            email:'',
-            facebookid:0,
-            avatarurl:'',
-            skinid:'',
-            usertype:'',
-            pokemons:[],
-            wins:0
-          })
-          .then(newUser => {
-            console.log(newUser);
-            done(null, newUser);
-          })
+        let hash = generateHash(password, salt)
+        // .then(hash => {
+        db.Users.create({
+          username: username, 
+          password: hash, 
+          email:'',
+          facebookid:0,
+          avatarurl:'',
+          skinid:'',
+          usertype:'',
+          pokemons:[],
+          wins:0
         })
+        .then(newUser => {
+          console.log(newUser);
+          done(null, newUser);
+        })
+        // })
       }
     })
     .catch(err => {
@@ -148,19 +154,20 @@ passport.use('local-login', new LocalStrategy({
   passReqToCallback: true
 },
 function(req, username, password, done) {
-  let isValidPassword = function(userpass, password) {
-    return bcrypt.compareSync(userpass, password);
-  }
   db.Users.findOne({
     where: {
       username: req.body.username
     }
   })
   .then(foundUser => {
+    console.log('FOUND USER')
     if (!foundUser) {
       return done(null, false);
     }
-    if (!isValidPassword(foundUser.password, password)) {
+    if (!isValidPassword(password, foundUser.password)) {
+      console.log(password, foundUser.password);
+      console.log(generateHash(password, 10));
+      console.log(isValidPassword(foundUser.password, password));
       console.log('invalid password');
       return done(null, false);
     }
@@ -223,9 +230,7 @@ app.post('/signup', passport.authenticate('local-signup', {
 app.get('/login/facebook',
   passport.authenticate('facebook'));
 
-// this route redirects user to /welcome after approval
-
-// Theoritically, this is redirecting to /welcome which makes a request to /user
+// Theoretically, this is redirecting to /welcome which makes a request to /user
 app.get('/login/facebook/return',
   passport.authenticate('facebook', {successRedirect: '/welcome',
     failureRedirect: '/login'})
@@ -234,10 +239,6 @@ app.get('/login/facebook/return',
 app.get('/user', (req, resp) => {
   console.log('in app get user');
   console.log('SESSION:',req.session);
-
-  if (!req.session.passport) {
-    resp.redirect('/login');
-  }
 
   resp.end(JSON.stringify({
     username: req.session.passport.user.username,
@@ -259,196 +260,6 @@ function isLoggedIn(req, res, next) {
   res.redirect('/');
 }
 
-
-
-
-
-// app.get('/logout', (req, resp) => {
-//   req.session.destroy(err => {
-//     if (err) throw err;
-//     resp.redirect('/login');
-//   });
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*===NOT INTEGRATED====*/
-/*===3rd PARTY AUTHENTICATION====*/
-// passport.use(new FacebookStrategy({
-//   clientID: '230138997524272', // || config.facebookAuth.clientID,
-//   clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672', // || config.facebookAuth.clientSecret,
-//   callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
-//   // passReqToCallback: true
-// },
-//   function(accessToken, refreshToken, profile, done) {
-//     process.nextTick(function() {
-//       // console.log('PROFILE FROM FACEBOOK: ', profile);
-//       return db.Users.findOrCreate({
-//         where: {
-//           username: profile.displayName.split(' ')[0],
-//           facebookid: profile.id
-//         }
-//       })
-//       .spread((user, created) => {
-//         console.log('User created with', user.get({plain: true}));
-//         // console.log('user in spread: ', user);
-
-//         // LEFT OFF HERE WITH ANTHONY - deleted return
-//         console.log(done);
-//         done(null, user);
-//       })
-//       .catch((err) => {
-//         console.log('ERROR creating record: ', err);
-//       })
-//     })
-//   }
-// ));
-
-
-
-
-// app.use(cookieParser());
-// app.use(bodyParser());
-// app.use(require('body-parser').urlencoded({extended: true}));
-
-// app.use(session({
-//   secret: 'odajs2iqw9asjxzascatsas22',
-//   resave: false,
-//   saveUninitialized: false,
-//   // cookie: { secure: true },
-// }));
-
-// // Peer into express session
-// app.use(function printSession(req, res, next) {
-//   console.log('req session', req.session);
-//   return next();
-// });
-
-
-/* =============== OLD AUTHENTICATION ROUTES / LOGIC ================= */
-
-
-
-/*======================================*/
-
-// app.post('/login', (req, resp) => {
-//   console.log('post request on /login');
-//   const username = req.body.username;
-//   const password = req.body.password;
-
-
-//   console.log('username', username);
-//   console.log('password', password);
-//   db.Users.findOne({where: { username } })
-//   .then(user => {
-//     if (!user) {
-//       resp.writeHead(201, {'Content-Type': 'text/plain'});
-//       resp.end('Username Not Found');
-//     }
-//     else {
-//       const hash = user.dataValues.password;
-//       //check if password (provided) matches hash (stored)
-//       return bcrypt.compare(password, hash)
-//     }
-//   })
-//   .then(passwordsMatch => {
-//     if (!passwordsMatch) {
-//       resp.writeHead(201, {'Content-Type': 'text/plain'});
-//       resp.end('Passwords Do Not Match');
-//     }
-//     else {
-//       // add username and logged in properties to session
-//       req.session.username = username;
-//       req.session.loggedIn = true;
-//       resp.redirect('/welcome');
-//     }
-//   })
-// })
-
-// app.post('/signup', (req, resp) => {
-//   console.log('post request on /signup');
-//   const username = req.body.username;
-//   const password = req.body.password;
-//   const email = req.body.email;
-//   // hash password with saltRounds (10)
-//   bcrypt.hash(password, saltRounds)
-//     .then(hash => 
-//       db.saveUser(username, hash, email)
-//     )
-//     .then(newuser => {
-//       if (newuser.dataValues) {
-//         // hitting an error here
-//         req.login({ user_id: newuser.id }, err => {
-//             if (err) throw err;
-//             console.log("NEW USER ID:", newuser.id);
-//             // console.log(newuser);
-//             // add credentials to session
-//             req.session.username = username;
-//             req.session.loggedIn = true;
-//             let session = JSON.stringify(req.session);
-//             resp.writeHead(201, {'Content-Type': 'app/json'});
-//             // send session back to client
-//             resp.end(session);
-//           });
-//       }
-//       else if (newuser.match('Username Already Exists')) {
-//         resp.writeHead(201, {'Content-Type': 'text/plain'});
-//         resp.end('Username Already Exists');
-//       }
-//       else if (newuser.match('Email Already Exists')) {
-//         resp.writeHead(201, {'Content-Type': 'text/plain'});
-//         resp.end('Email Already Exists');
-//       }
-//     })
-//     .catch(err => {
-//       throw new Error(err)
-//     });
-// })
-
-// == Uncomment and ping to add new moves to the database ==
-// app.get('/moves', (req, resp) => {
-//   checkForMoves(fetchMoves)
-//   resp.sendStatus(200);
-// });
-
-// app.get('/user', (req, resp) => {
-//   resp.end(JSON.stringify({
-//     username: req.session.username,
-//     loggedIn: req.session.loggedIn
-//   }));
-// })
-
-// app.get('/logout', (req, resp) => {
-//   req.session.destroy(err => {
-//     if (err) throw err;
-//     resp.redirect('/login');
-//   });
-// });
 
 
 /* =============================================================== */
