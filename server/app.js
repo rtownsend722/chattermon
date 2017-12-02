@@ -158,17 +158,14 @@ function(req, username, password, done) {
   })
   .then(foundUser => {
     if (!foundUser) {
-      done(null, false);
-      return;
+      return done(null, false);
     }
     if (!isValidPassword(foundUser.password, password)) {
       console.log('invalid password');
-      done(null, false);
-      return;
+      return done(null, false);
     }
     console.log('valid pw');
-    console.log(isValidPassword(foundUser.password, password));
-    done(null, foundUser);
+    return done(null, foundUser);
   })
   .catch(err => {
     console.log('ERROR verifying record: ', err);
@@ -195,10 +192,6 @@ passport.use(new FacebookStrategy({
       })
       .spread((user, created) => {
         console.log('User created with', user.get({plain: true}));
-        // console.log('user in spread: ', user);
-
-        // LEFT OFF HERE WITH ANTHONY - deleted return
-        console.log(done);
         done(null, user);
       })
       .catch((err) => {
@@ -214,7 +207,7 @@ passport.use(new FacebookStrategy({
 // }));
 
 app.post('/login',
-  passport.authenticate('local-login', {failureRedirect: '/'}),
+  passport.authenticate('local-login', {failureRedirect: '/login'}),
   function(req, resp) {
     console.log('IN REDIRECT WITH REQ/RESP');
     req.session.loggedIn = true;
@@ -241,6 +234,10 @@ app.get('/login/facebook/return',
 app.get('/user', (req, resp) => {
   console.log('in app get user');
   console.log('SESSION:',req.session);
+
+  if (!req.session.passport) {
+    resp.redirect('/login');
+  }
 
   resp.end(JSON.stringify({
     username: req.session.passport.user.username,
