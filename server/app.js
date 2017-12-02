@@ -599,6 +599,8 @@ io.on('connection', (socket) => {
     io.to(data.gameid).emit('attack processed', {
       basicAttackDialog: turnlog
     })
+
+    console.log('game opponent pokemon health:', game[opponent].pokemon[0].name, game[opponent].pokemon[0].health);
     if (
       game[opponent].pokemon[0].health <= 0 && 
       game[opponent].pokemon[1].health <= 0 && 
@@ -608,14 +610,14 @@ io.on('connection', (socket) => {
       io.to(data.gameid).emit('turn move', game);
       io.to(data.gameid).emit('gameover', { name: game[player].name });
       const winner = game[player].name;
-      db.findOne({
+      db.Users.findOne({
         where: {
           username: winner
         }
       })
       .then(founduser => {
         // console.log('FOUND USER: ', founduser);
-        db.update(
+        db.Users.update(
           {wins: founduser.wins + 1}, 
           {where: {username: founduser.username}}, 
         {
