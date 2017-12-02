@@ -91,15 +91,6 @@ Users.sync();
 Pokemon.sync();
 Move.sync();
 
-//Refactor to remove email
-const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype, wins) =>  {
-  return Users
-    .findOne({ where: { username } })
-    .then(userFound => {
-      if (userFound) return 'Username Already Exists';
-      else return Users.create({ username, password, email:'', facebookid:0, avatarurl:'', skinid:'', usertype:'', pokemons:[], wins:0 });
-    });
-};
 
 // const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype, wins) =>  {
 //   return Users
@@ -153,7 +144,7 @@ const saveMove = (moveObj) => {
 
 module.exports = {
   connection: sequelize,
-  saveUser: saveUser,
+  // saveUser: saveUser,
   Users: Users,
   Pokemon: Pokemon,
   Move: Move,

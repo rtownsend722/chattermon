@@ -58,6 +58,11 @@ if (process.env.NODE_ENV !== 'production') {
 /*ALL THE NEW STUFF*/
 
 //============SESSION SETUP=============//
+// Peer into express session
+app.use(function printSession(req, res, next) {
+  console.log('req session', req.session);
+  return next();
+});
 
   // Determines data of user object to be stored in session
   // Looks like: req.session.passport.user = {username: 'username'}
@@ -175,10 +180,9 @@ function(req, username, password, done) {
 
 
 passport.use(new FacebookStrategy({
-  clientID: '230138997524272', // || config.facebookAuth.clientID,
-  clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672', // || config.facebookAuth.clientSecret,
-  callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
-  // passReqToCallback: true
+  clientID: '230138997524272',
+  clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672',
+  callbackURL: 'http://localhost:3000/login/facebook/return'
 },
   function(accessToken, refreshToken, profile, done) {
     process.nextTick(function() {
