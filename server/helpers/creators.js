@@ -13,39 +13,61 @@ which will be emitted from the socket connection within server/app.js
 
 
 const createPokemon = (pokemon) => {
-  const { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
+  console.log('(3) ********* reached create pokemon with 1st pokemon as ******', pokemon);
+  let { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
 
-  return {
-    name,
-    health: baseHealth,
-    initialHealth: baseHealth,
-    attack: baseAttack,
-    defense: baseDefense,
-    sprites: {front_default: frontSprite, back_default: backSprite},
-    types,
-    moves: createMoves(types)
-  }
+  return new Promise((resolve, reject) => {
+    createMoves(types)
+    .then((moves) => {
+        console.log('************************ (6) BEFORE POKE TO ADD*****************');
+
+          let { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
+
+          var pokeToAdd = {
+            name,
+            health: baseHealth,
+            initialHealth: baseHealth,
+            attack: baseAttack,
+            defense: baseDefense,
+            sprites: {front_default: frontSprite, back_default: backSprite},
+            types,
+            moves: moves
+          }
+
+          console.log('(7) ********* created pokemon with moves as ******', pokeToAdd);
+
+          resolve(pokeToAdd);
+    })
+  })
 }
 
 const createMoves = (types) => {
+  console.log('(4) ********* reached create moves ******');
   let primaryType = types[0];
-  let output = [];
 
-  db.Move.findAll({
-    where: {
-      type: primaryType
-    }
-  })
-  .then(movesToAdd => {
-    movesToAdd.forEach((moveObj) => {
-      output.push(moveObj);
+    return new Promise((resolve, reject) => {
+      db.Move.findAll({
+        where: {
+          type: primaryType
+        }
+      })
+      .then(movesToAdd => {
+        console.log('(5) ********* found moves of that type from the db with ******', movesToAdd);
+        let output = [];
+        
+        movesToAdd.forEach((moveObj) => {
+          // console.log('MOVED OBJ DV', moveObj.dataValues);
+          output.push(moveObj.dataValues);
+        })
+
+        resolve(output);
+      })
+      .catch(err => reject(err)); 
     })
-
-    return output;
-  })
 }
 
 const createPlayer = (player, number) => {
+  console.log('(1) ********* reached create player ******');
   const random = () => {
     return Math.ceil(Math.random() * 150)
   }
@@ -56,22 +78,29 @@ const createPlayer = (player, number) => {
     }
     Promise.all(pokemonCalls)
     .then(results => {
-      // console.log('results ', results);
+      console.log('(2) ********* fetched 3 pokemon with ******', pokemonCalls);
       let pokemon = []
       results.forEach(result => {
-        pokemon.push(createPokemon(result)); 
-      });
-      resolve({
-        player: number,
-        name: player.name,
-        pokemon
+        pokemon.push(createPokemon(result))
+          console.log('(8) **************POKEMON ARR IS**********', pokemon);
+      })
+
+      Promise.all(pokemon)
+      .then((pokemon) => {
+        console.log('(9) ********* new pokemon with moves array is now ******', pokemon);
+      
+        let userCreated = {
+            player: number,
+            name: player.name,
+            pokemon
+        }
+
+        console.log('(10) ********* new user with pokemon is now ******', userCreated);
+        resolve(userCreated);
       })
     })
-    .catch(err => reject(err));  
   })
 }
-
-//***TODO*** createMoves function
 
 const createTurnlog = (game, turn, type) => {
   const player = game.playerTurn;
