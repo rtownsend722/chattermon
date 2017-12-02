@@ -58,7 +58,7 @@ if (process.env.NODE_ENV !== 'production') {
 /*ALL THE NEW STUFF*/
 
 //============SESSION SETUP=============//
-// Peer into express session
+// Peer into passport session
 app.use(function printSession(req, res, next) {
   console.log('req session', req.session);
   return next();
@@ -67,20 +67,20 @@ app.use(function printSession(req, res, next) {
   // Determines data of user object to be stored in session
   // Looks like: req.session.passport.user = {username: 'username'}
 passport.serializeUser(function(user, done) {
-  done(null, user.id);
+  done(null, user);
 });
 
 // Matches key (username) to key in session object in subsequent requests
 // The fetched object is attached to the request object as req.user
-passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function(user, done) {
   return db.Users.findOne({
     where : {
-      id: id
+      id: user.id
     }
   })
   .then(foundUser => {
     console.log('in deser');
-    done(null, id);
+    done(null, user.id);
   })
   .catch((err) => {
     console.log('ERROR deserializing record: ', err);
@@ -109,7 +109,7 @@ function(req, username, password, done) {
     .then(userFound => {
       if (userFound) {
         // alert('Username already exists');
-        return done(null, false);
+        done(null, false);
       } else {
         //may need to promisify in some weird way
         generateHash(password, 10)
@@ -127,7 +127,7 @@ function(req, username, password, done) {
           })
           .then(newUser => {
             console.log(newUser);
-            return done(null, newUser);
+            done(null, newUser);
           })
         })
       }
@@ -152,7 +152,8 @@ function(req, username, password, done) {
   .then(foundUser => {
     if (!foundUser) {
       alert('User doesn\'t exist!');
-      return done(null, false);
+      done(null, false);
+      return;
     } else {
       let hash = foundUser.dataValues.password;
       return {
@@ -164,10 +165,11 @@ function(req, username, password, done) {
   .then(userInfo => {
     if (!userInfo.match) {
       alert('Password doesn\'t match!');
-      return done(null, false);
+      done(null, false);
+      return;
     } else {
-      //this probably does not work
-      return done(null, userInfo.user);
+      console.log('logged in user. userInfo: ', userInfo.user);
+      done(null, userInfo.user);
     }
   })
   .catch(err => {
@@ -208,10 +210,18 @@ passport.use(new FacebookStrategy({
   }
 ));
 
-app.post('/login', passport.authenticate('local-login', {
-  successRedirect: '/welcome',
-  failureRedirect: '/login'
-}));
+// app.post('/login', passport.authenticate('local-login', {
+//   successRedirect: '/welcome',
+//   failureRedirect: '/login'
+// }));
+
+app.post('/login',
+  passport.authenticate('local-login', {failureRedirect: '/login'}),
+  function(req, resp) {
+    console.log('IN REDIRECT WITH REQ/RESP');
+    req.session.loggedIn = true;
+    resp.redirect('/welcome');
+  })
 
 app.post('/signup', passport.authenticate('local-signup', {
   successRedirect: '/welcome',
@@ -232,15 +242,20 @@ app.get('/login/facebook/return',
 
 //not sure about this
 app.get('/user', (req, resp) => {
+  console.log('in app get user');
+  console.log('SESSION:',req.session);
+
   resp.end(JSON.stringify({
-    username: req.session.username,
+    username: req.session.passport.user.username,
     loggedIn: req.session.loggedIn
   }));
 })
 
 app.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/login');
+  req.session.destroy(err => {
+    if (err) throw err;
+    res.redirect('/login');
+  });
 });
 
 function isLoggedIn(req, res, next) {
@@ -254,7 +269,12 @@ function isLoggedIn(req, res, next) {
 
 
 
-
+// app.get('/logout', (req, resp) => {
+//   req.session.destroy(err => {
+//     if (err) throw err;
+//     resp.redirect('/login');
+//   });
+// });
 
 
 
