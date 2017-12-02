@@ -299,7 +299,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('switch', data => {
+  socket.on('attack with move', (data) => {
+    //TODO: handler
+  })
+
+  socket.on('switch', (data) => {
     const game = games[data.gameid];
     const player = game.playerTurn;
     const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1';
