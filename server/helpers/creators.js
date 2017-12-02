@@ -21,6 +21,17 @@ const createPokemon = (pokemon) => {
     .then((moves) => {
         console.log('************************ (6) BEFORE POKE TO ADD*****************');
 
+          var random = (factor) => {
+            return Math.ceil(Math.random() * factor)
+          }
+
+          totalMoveNumber = moves.length < 4 ? moves.length : 4;
+          var finalMoves = [];
+          
+          for(var i = 0; i < totalMoveNumber; i++){
+            finalMoves.push(moves[random(moves.length - 1)]);
+          }
+
           let { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
 
           var pokeToAdd = {
@@ -31,7 +42,7 @@ const createPokemon = (pokemon) => {
             defense: baseDefense,
             sprites: {front_default: frontSprite, back_default: backSprite},
             types,
-            moves: moves
+            moves: finalMoves
           }
 
           console.log('(7) ********* created pokemon with moves as ******', pokeToAdd);
