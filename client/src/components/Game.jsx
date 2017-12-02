@@ -9,6 +9,7 @@ import GameView from './GameView.jsx';
 import GameOverView from './GameOverView.jsx';
 import GameForfeit from './GameForfeit.jsx';
 import GameState from './GameState.jsx';
+import Scoreboard from './Scoreboard.jsx';
 import Logo from './Logo.jsx';
 import css from '../styles.css';
 import debounce from 'lodash';
@@ -341,6 +342,7 @@ export default class Game extends Component {
       <div className={css.stateContainer}>
         <Logo name={this.state.name} isActive={this.state.isActive} opponent={this.state.opponent} />
         <GameState pokemon={this.state.pokemon} />
+        <Scoreboard/>
         <Chat messageArray={this.state.messageArray} chatInput={this.state.chatInput} handleChatInputSubmit={this.handleChatInputSubmit} handleInputChange={this.handleInputChange} handleTyping={this.socketHandlers().handleTyping.bind(this)} opponentTyping={this.state.opponentTyping} /> 
       </div>
     );

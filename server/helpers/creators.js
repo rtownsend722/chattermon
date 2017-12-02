@@ -36,7 +36,7 @@ const createPlayer = (player, number) => {
     }
     Promise.all(pokemonCalls)
     .then(results => {
-      console.log('results ', results);
+      // console.log('results ', results);
       let pokemon = []
       results.forEach(result => {
         pokemon.push(createPokemon(result)); 

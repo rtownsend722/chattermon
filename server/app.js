@@ -37,7 +37,7 @@ passport.use(new FacebookStrategy({
   function(accessToken, refreshToken, profile, done) {
     process.nextTick(function() {
       // console.log('PROFILE FROM FACEBOOK: ', profile);
-      return db.Users.findOrCreate({
+      return db.findOrCreate({
         where: {
           username: profile.displayName.split(' ')[0],
           facebookid: profile.id
@@ -67,7 +67,7 @@ passport.serializeUser(function(user, done) {
 // Matches key (username) to key in session object in subsequent requests
 // The fetched object is attached to the request object as req.user
 passport.deserializeUser(function(id, done) {
-  return db.Users.findOne({
+  return db.findOne({
     where : {
       id: id
     }
@@ -162,7 +162,7 @@ io.on('connection', (socket) => {
 
   socket.on('join game', (data) => {
     socket.join(data.gameid);
-    console.log('data: ', data);
+    // console.log('data: ', data);
     if (!(data.gameid in games)) {
       createPlayer(data, 'player1')
       .then(player1 => {
@@ -202,21 +202,21 @@ io.on('connection', (socket) => {
 
     const winner = game[opponent].name;
 
-    db.Users.findOne({
+    db.findOne({
       where: {
           username: winner
         }
       })
       .then(founduser => {
-        console.log('FOUND USER: ', founduser);
-        db.Users.update(
+        // console.log('FOUND USER: ', founduser);
+        db.update(
           {wins: founduser.wins + 1}, 
           {where: {username: founduser.username}}, 
         {
           fields: ['wins']
         })
         .then(updateduser => {
-          console.log('UPDATED USER ', updateduser);
+          // console.log('UPDATED USER ', updateduser);
         })
         .catch(error => {
         })
@@ -225,7 +225,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('user typing', (data) => {
-    console.log('typing on ', data.gameid);
+    // console.log('typing on ', data.gameid);
     
     io.to(data.gameid).emit('show typing', {
       gameid: data.gameid,
@@ -234,7 +234,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('inactive typing', (data) => {
-    console.log('REACHED inactive typing on server!!!!!!!!');
+    // console.log('REACHED inactive typing on server!!!!!!!!');
     
     io.to(data.gameid).emit('end typing', {
       gameid: data.gameid,
@@ -269,21 +269,21 @@ io.on('connection', (socket) => {
       io.to(data.gameid).emit('turn move', game);
       io.to(data.gameid).emit('gameover', { name: game[player].name });
       const winner = game[player].name;
-      db.Users.findOne({
+      db.findOne({
         where: {
           username: winner
         }
       })
       .then(founduser => {
-        console.log('FOUND USER: ', founduser);
-        db.Users.update(
+        // console.log('FOUND USER: ', founduser);
+        db.update(
           {wins: founduser.wins + 1}, 
           {where: {username: founduser.username}}, 
         {
           fields: ['wins']
         })
         .then(updateduser => {
-          console.log('UPDATED USER ', updateduser);
+          // console.log('UPDATED USER ', updateduser);
         })
         .catch(error => {
         })
@@ -316,6 +316,17 @@ io.on('connection', (socket) => {
 
 /* =============================================================== */
 
+/* =============== MISCELLANEOUS ROUTES / LOGIC ================= */
+
+app.get('/scores', (req, resp) => {
+  console.log('fetching scores');
+  db.Users.findAll()
+  .then(foundusers => {
+    console.log('found');
+    resp.status(200).send(foundusers);
+  })
+}) 
+
 
 /* =============== AUTHENTICATION ROUTES / LOGIC ================= */
 
@@ -341,8 +352,7 @@ app.post('/login', (req, resp) => {
 
   console.log('username', username);
   console.log('password', password);
-  db.Users
-  .findOne({where: { username } })
+  db.Users.findOne({where: { username } })
   .then(user => {
     if (!user) {
       resp.writeHead(201, {'Content-Type': 'text/plain'});
@@ -384,7 +394,7 @@ app.post('/signup', (req, resp) => {
         req.login({ user_id: newuser.id }, err => {
             if (err) throw err;
             console.log("NEW USER ID:", newuser.id);
-            console.log(newuser);
+            // console.log(newuser);
             // add credentials to session
             req.session.username = username;
             req.session.loggedIn = true;

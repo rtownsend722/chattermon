@@ -341,6 +341,41 @@ body {
   border-radius: 5px;
 }
 
+.highScoresContainer {
+  font-family: 'Press Start 2P', cursive;
+  text-align: center;
+  font-size: 0.8rem;
+  background-color: rgb(0, 0, 0);
+  color: rgb(0, 255, 51);
+  height: 200px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 2px solid rgb(0, 255, 51);
+  border-radius: 5px;
+}
+
+.highScore {
+  margin: 5px auto;
+}
+
+.highScoresTitle {
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.highScoreEntryName {
+  width: 20%;
+  text-align: left;
+  display: inline-block;
+  margin-right: 3em;
+}
+
+.highScoreEntry {
+  width: 20%;
+  display: inline-block;
+  margin-left: 3em;
+}
+
 .gameOver {
   font-family: 'Press Start 2P', cursive;
   text-align: center; 
