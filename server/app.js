@@ -414,12 +414,11 @@ app.post('/signup', (req, resp) => {
     });
 })
 
-app.get('/moves', (req, resp) => {
-  // pokeapi check for moves function
-  checkForMoves(fetchMoves)
-  .then((data) => resp.sendStatus(200));
-    // takes a callback that is the fetch moves function
-});
+// == Uncomment and ping to add new moves to the database ==
+// app.get('/moves', (req, resp) => {
+//   checkForMoves(fetchMoves)
+//   resp.sendStatus(200);
+// });
 
 app.get('/user', (req, resp) => {
   resp.end(JSON.stringify({
