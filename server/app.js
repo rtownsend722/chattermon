@@ -320,7 +320,12 @@ io.on('connection', (socket) => {
 
 app.get('/scores', (req, resp) => {
   console.log('fetching scores');
-  db.Users.findAll()
+  db.Users.findAll({
+    order: [
+      ['wins', 'DESC']
+    ],
+    limit: 5
+  })
   .then(foundusers => {
     console.log('found');
     resp.status(200).send(foundusers);

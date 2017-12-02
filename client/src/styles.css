@@ -43,14 +43,14 @@ body {
 .messageContainer {
   padding: 0 10px 20px;
   margin-bottom: 20px;
-  max-height: 200px;
+  max-height: 150px;
   position: relative;
   overflow-y: scroll;
   overflow-x: hidden;
 }
 
 .logoContainer {
-  height: 30%;
+  height: 10%;
 }
 
 .messageInstance {
@@ -154,7 +154,7 @@ body {
 .pokeView {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-gap: 20px;
+  grid-gap: 10px;
 }
 
 .stats {
@@ -347,7 +347,7 @@ body {
   font-size: 0.8rem;
   background-color: rgb(0, 0, 0);
   color: rgb(0, 255, 51);
-  height: 200px;
+  height: 125px;
   padding: 10px;
   margin-bottom: 10px;
   border: 2px solid rgb(0, 255, 51);
