@@ -73,7 +73,7 @@ const checkForMoves = (callback) => {
       if(data.length < 165) {
         console.log('There are less than 165 moves in the database!');
         console.log('Number of moves in the database: ', data.length);
-        callback(data.length, db.saveMove);
+        callback(++data.length, db.saveMove);
       } else {
         console.log('All 165 moves are in the database!');
         console.log('Number of moves in the database: ', data.length);
@@ -84,14 +84,16 @@ const checkForMoves = (callback) => {
 const fetchMoves = (moveNumber, callback) => {
   let arrayOfRequests = [];
 
-  for(let i = moveNumber; i < moveNumber + 1; i++) {
-    arrayOfRequests.push(axios.get(`https://pokeapi.co/api/v2/move/${moveNumber}/`));
+  for(let i = moveNumber; i < moveNumber + 10; i++) {
     console.log(`Request for move: ${i}`);
+    arrayOfRequests.push(axios.get(`https://pokeapi.co/api/v2/move/${i}/`));
   }
 
   Promise.all(arrayOfRequests)
   .then((arrOfPromises) => {
     arrOfPromises.forEach((move) => {
+      console.log('move object returned from the api:', move.data);
+      move = move.data;
       console.log(`Shaping move with id: ${move.id}`);
       moveObj = {};
       moveObj.id = move.id;
