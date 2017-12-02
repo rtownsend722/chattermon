@@ -37,7 +37,7 @@ passport.use(new FacebookStrategy({
   function(accessToken, refreshToken, profile, done) {
     process.nextTick(function() {
       // console.log('PROFILE FROM FACEBOOK: ', profile);
-      return db.findOrCreate({
+      return db.Users.findOrCreate({
         where: {
           username: profile.displayName.split(' ')[0],
           facebookid: profile.id
