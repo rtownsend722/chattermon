@@ -1,19 +1,21 @@
 const express = require('express');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const db = require('../database/db.js');
 const bodyParser = require('body-parser');
 const Promise = require('bluebird');
+
 const bcrypt = Promise.promisifyAll(require('bcrypt'));
-const saltRounds = 10;
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
+
 const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-/*====IMPORT CONFIG FOR LOCAL DEV ONLY - POPULATE WITH YOUR OWN FACEBOOK AUTHENTICATION CREDENTIALS====*/
-// const config = require('./config.js');
+
+const session = require('express-session');
+
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
 const { damageCalculation, moveDamageCalculation } = require('../game-logic.js');
@@ -22,12 +24,156 @@ const { saveMove } = require('../database/db.js');
 
 const dist = path.join(__dirname, '/../client/dist');
 
-
-
 /* ======================== MIDDLEWARE ======================== */
 
-/*===NOT INTEGRATED====*/
-/*===3rd PARTY AUTHENTICATION====*/
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false}));
+app.use(cookieParser());
+app.use(express.static(dist));
+
+app.use(session({ secret: 'supersecret' }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// require('./routes.js')(app, passport);
+
+// ** Webpack middleware **
+// Note: Make sure while developing that bundle.js is NOT built - delete if it is in dist directory
+
+if (process.env.NODE_ENV !== 'production') {
+  const webpack = require('webpack');
+  const webpackDevMiddleware = require('webpack-dev-middleware');
+  const webpackHotMiddleware = require('webpack-hot-middleware');
+  const config = require('../webpack.config.js');
+  const compiler = webpack(config);
+
+  app.use(webpackHotMiddleware(compiler));
+  app.use(webpackDevMiddleware(compiler, {
+    noInfo: true,
+    publicPath: config.output.publicPathdist
+  }));
+}
+
+
+/*ALL THE NEW STUFF*/
+
+//============SESSION SETUP=============//
+
+  // Determines data of user object to be stored in session
+  // Looks like: req.session.passport.user = {username: 'username'}
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+// Matches key (username) to key in session object in subsequent requests
+// The fetched object is attached to the request object as req.user
+passport.deserializeUser(function(id, done) {
+  return db.Users.findOne({
+    where : {
+      id: id
+    }
+  })
+  .then(foundUser => {
+    console.log('in deser');
+    done(null, id);
+  })
+  .catch((err) => {
+    console.log('ERROR deserializing record: ', err);
+  })
+});
+
+const generateHash = function(password) {
+  return bcrypt.hash(password, 10);
+}
+
+//============LOCAL STRATEGIES=============//
+
+//============LOCAL SIGNUP=============//
+
+passport.use('local-signup', new LocalStrategy({
+  passReqToCallback: true
+},
+function(req, username, password, done) {
+  process.nextTick(function() {
+    //fn call to find user in db
+    return db.Users.findOne({
+      where: {
+        username: username
+      }
+    })
+    .then(userFound => {
+      if (userFound) {
+        // alert('Username already exists');
+        return done(null, false);
+      } else {
+        //may need to promisify in some weird way
+        generateHash(password, 10)
+        .then(hash => {
+          db.Users.create({
+            username: username, 
+            password: hash, 
+            email:'',
+            facebookid:0,
+            avatarurl:'',
+            skinid:'',
+            usertype:'',
+            pokemons:[],
+            wins:0
+          })
+          .then(newUser => {
+            console.log(newUser);
+            return done(null, newUser);
+          })
+        })
+      }
+    })
+    .catch(err => {
+      console.log('ERROR creating record: ', err);
+    })
+  })
+}))
+
+//============LOCAL LOGIN=============//
+
+passport.use('local-login', new LocalStrategy({
+  passReqToCallback: true
+},
+function(req, username, password, done) {
+  db.Users.findOne({
+    where: {
+      username: req.body.username
+    }
+  })
+  .then(foundUser => {
+    if (!foundUser) {
+      alert('User doesn\'t exist!');
+      return done(null, false);
+    } else {
+      let hash = foundUser.dataValues.password;
+      return {
+        match: bcrypt.compare(password, hash),
+        user: foundUser
+      }
+    }
+  })
+  .then(userInfo => {
+    if (!userInfo.match) {
+      alert('Password doesn\'t match!');
+      return done(null, false);
+    } else {
+      //this probably does not work
+      return done(null, userInfo.user);
+    }
+  })
+  .catch(err => {
+    console.log('ERROR verifying record: ', err);
+  })
+}))
+
+
+//============LOCAL LOGIN=============//
+
+
 passport.use(new FacebookStrategy({
   clientID: '230138997524272', // || config.facebookAuth.clientID,
   clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672', // || config.facebookAuth.clientSecret,
@@ -58,41 +204,126 @@ passport.use(new FacebookStrategy({
   }
 ));
 
-// Determines data of user object to be stored in session
-// Looks like: req.session.passport.user = {username: 'username'}
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
+app.post('/login', passport.authenticate('local-login', {
+  successRedirect: '/welcome',
+  failureRedirect: '/login'
+}));
+
+app.post('/signup', passport.authenticate('local-signup', {
+  successRedirect: '/welcome',
+  failureRedirect: '/signup'
+}));
+
+// this route redirects user to FB for auth
+app.get('/login/facebook',
+  passport.authenticate('facebook'));
+
+// this route redirects user to /welcome after approval
+
+// Theoritically, this is redirecting to /welcome which makes a request to /user
+app.get('/login/facebook/return',
+  passport.authenticate('facebook', {successRedirect: '/welcome',
+    failureRedirect: '/login'})
+  );
+
+//not sure about this
+app.get('/user', (req, resp) => {
+  resp.end(JSON.stringify({
+    username: req.session.username,
+    loggedIn: req.session.loggedIn
+  }));
+})
+
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/login');
 });
 
-// Matches key (username) to key in session object in subsequent requests
-// The fetched object is attached to the request object as req.user
-passport.deserializeUser(function(id, done) {
-  return db.findOne({
-    where : {
-      id: id
-    }
-  })
-  .then(foundUser => {
-    console.log('in deser');
-    done(null, id);
-  })
-  .catch((err) => {
-    console.log('ERROR deserializing record: ', err);
-  })
-});
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated())
+    return next();
 
-app.use(express.static(dist));
+  res.redirect('/');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*===NOT INTEGRATED====*/
+/*===3rd PARTY AUTHENTICATION====*/
+// passport.use(new FacebookStrategy({
+//   clientID: '230138997524272', // || config.facebookAuth.clientID,
+//   clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672', // || config.facebookAuth.clientSecret,
+//   callbackURL: 'http://localhost:3000/login/facebook/return' // || config.facebookAuth.callbackURL
+//   // passReqToCallback: true
+// },
+//   function(accessToken, refreshToken, profile, done) {
+//     process.nextTick(function() {
+//       // console.log('PROFILE FROM FACEBOOK: ', profile);
+//       return db.Users.findOrCreate({
+//         where: {
+//           username: profile.displayName.split(' ')[0],
+//           facebookid: profile.id
+//         }
+//       })
+//       .spread((user, created) => {
+//         console.log('User created with', user.get({plain: true}));
+//         // console.log('user in spread: ', user);
+
+//         // LEFT OFF HERE WITH ANTHONY - deleted return
+//         console.log(done);
+//         done(null, user);
+//       })
+//       .catch((err) => {
+//         console.log('ERROR creating record: ', err);
+//       })
+//     })
+//   }
+// ));
+
+
+
 
 // app.use(cookieParser());
-app.use(bodyParser());
-app.use(require('body-parser').urlencoded({extended: true}));
+// app.use(bodyParser());
+// app.use(require('body-parser').urlencoded({extended: true}));
 
-app.use(session({
-  secret: 'odajs2iqw9asjxzascatsas22',
-  resave: false,
-  saveUninitialized: false,
-  // cookie: { secure: true },
-}));
+// app.use(session({
+//   secret: 'odajs2iqw9asjxzascatsas22',
+//   resave: false,
+//   saveUninitialized: false,
+//   // cookie: { secure: true },
+// }));
 
 // // Peer into express session
 // app.use(function printSession(req, res, next) {
@@ -100,27 +331,109 @@ app.use(session({
 //   return next();
 // });
 
-app.use(passport.initialize());
-app.use(passport.session());
 
-// ** Webpack middleware **
-// Note: Make sure while developing that bundle.js is NOT built - delete if it is in dist directory
+/* =============== OLD AUTHENTICATION ROUTES / LOGIC ================= */
 
-if (process.env.NODE_ENV !== 'production') {
-  const webpack = require('webpack');
-  const webpackDevMiddleware = require('webpack-dev-middleware');
-  const webpackHotMiddleware = require('webpack-hot-middleware');
-  const config = require('../webpack.config.js');
-  const compiler = webpack(config);
 
-  app.use(webpackHotMiddleware(compiler));
-  app.use(webpackDevMiddleware(compiler, {
-    noInfo: true,
-    publicPath: config.output.publicPathdist
-  }));
-}
 
-/* =============================================================== */ 
+/*======================================*/
+
+// app.post('/login', (req, resp) => {
+//   console.log('post request on /login');
+//   const username = req.body.username;
+//   const password = req.body.password;
+
+
+//   console.log('username', username);
+//   console.log('password', password);
+//   db.Users.findOne({where: { username } })
+//   .then(user => {
+//     if (!user) {
+//       resp.writeHead(201, {'Content-Type': 'text/plain'});
+//       resp.end('Username Not Found');
+//     }
+//     else {
+//       const hash = user.dataValues.password;
+//       //check if password (provided) matches hash (stored)
+//       return bcrypt.compare(password, hash)
+//     }
+//   })
+//   .then(passwordsMatch => {
+//     if (!passwordsMatch) {
+//       resp.writeHead(201, {'Content-Type': 'text/plain'});
+//       resp.end('Passwords Do Not Match');
+//     }
+//     else {
+//       // add username and logged in properties to session
+//       req.session.username = username;
+//       req.session.loggedIn = true;
+//       resp.redirect('/welcome');
+//     }
+//   })
+// })
+
+// app.post('/signup', (req, resp) => {
+//   console.log('post request on /signup');
+//   const username = req.body.username;
+//   const password = req.body.password;
+//   const email = req.body.email;
+//   // hash password with saltRounds (10)
+//   bcrypt.hash(password, saltRounds)
+//     .then(hash => 
+//       db.saveUser(username, hash, email)
+//     )
+//     .then(newuser => {
+//       if (newuser.dataValues) {
+//         // hitting an error here
+//         req.login({ user_id: newuser.id }, err => {
+//             if (err) throw err;
+//             console.log("NEW USER ID:", newuser.id);
+//             // console.log(newuser);
+//             // add credentials to session
+//             req.session.username = username;
+//             req.session.loggedIn = true;
+//             let session = JSON.stringify(req.session);
+//             resp.writeHead(201, {'Content-Type': 'app/json'});
+//             // send session back to client
+//             resp.end(session);
+//           });
+//       }
+//       else if (newuser.match('Username Already Exists')) {
+//         resp.writeHead(201, {'Content-Type': 'text/plain'});
+//         resp.end('Username Already Exists');
+//       }
+//       else if (newuser.match('Email Already Exists')) {
+//         resp.writeHead(201, {'Content-Type': 'text/plain'});
+//         resp.end('Email Already Exists');
+//       }
+//     })
+//     .catch(err => {
+//       throw new Error(err)
+//     });
+// })
+
+// == Uncomment and ping to add new moves to the database ==
+// app.get('/moves', (req, resp) => {
+//   checkForMoves(fetchMoves)
+//   resp.sendStatus(200);
+// });
+
+// app.get('/user', (req, resp) => {
+//   resp.end(JSON.stringify({
+//     username: req.session.username,
+//     loggedIn: req.session.loggedIn
+//   }));
+// })
+
+// app.get('/logout', (req, resp) => {
+//   req.session.destroy(err => {
+//     if (err) throw err;
+//     resp.redirect('/login');
+//   });
+// });
+
+
+/* =============================================================== */
 
 
 /* ======================== GAME STATE =========================== */
@@ -386,118 +699,7 @@ app.get('/scores', (req, resp) => {
 }) 
 
 
-/* =============== AUTHENTICATION ROUTES / LOGIC ================= */
 
-// this route redirects user to FB for auth
-app.get('/login/facebook',
-  passport.authenticate('facebook'));
-
-// this route redirects user to /welcome after approval
-
-// Theoritically, this is redirecting to /welcome which makes a request to /user
-app.get('/login/facebook/return',
-  passport.authenticate('facebook', {successRedirect: '/welcome',
-    failureRedirect: '/login'})
-  );
-
-/*======================================*/
-
-app.post('/login', (req, resp) => {
-  console.log('post request on /login');
-  const username = req.body.username;
-  const password = req.body.password;
-
-
-  console.log('username', username);
-  console.log('password', password);
-  db.Users.findOne({where: { username } })
-  .then(user => {
-    if (!user) {
-      resp.writeHead(201, {'Content-Type': 'text/plain'});
-      resp.end('Username Not Found');
-    }
-    else {
-      const hash = user.dataValues.password;
-      //check if password (provided) matches hash (stored)
-      return bcrypt.compare(password, hash)
-    }
-  })
-  .then(passwordsMatch => {
-    if (!passwordsMatch) {
-      resp.writeHead(201, {'Content-Type': 'text/plain'});
-      resp.end('Passwords Do Not Match');
-    }
-    else {
-      // add username and logged in properties to session
-      req.session.username = username;
-      req.session.loggedIn = true;
-      resp.redirect('/welcome');
-    }
-  })
-})
-
-app.post('/signup', (req, resp) => {
-  console.log('post request on /signup');
-  const username = req.body.username;
-  const password = req.body.password;
-  const email = req.body.email;
-  // hash password with saltRounds (10)
-  bcrypt.hash(password, saltRounds)
-    .then(hash => 
-      db.saveUser(username, hash, email)
-    )
-    .then(newuser => {
-      if (newuser.dataValues) {
-        // hitting an error here
-        req.login({ user_id: newuser.id }, err => {
-            if (err) throw err;
-            console.log("NEW USER ID:", newuser.id);
-            // console.log(newuser);
-            // add credentials to session
-            req.session.username = username;
-            req.session.loggedIn = true;
-            let session = JSON.stringify(req.session);
-            resp.writeHead(201, {'Content-Type': 'app/json'});
-            // send session back to client
-            resp.end(session);
-          });
-      }
-      else if (newuser.match('Username Already Exists')) {
-        resp.writeHead(201, {'Content-Type': 'text/plain'});
-        resp.end('Username Already Exists');
-      }
-      else if (newuser.match('Email Already Exists')) {
-        resp.writeHead(201, {'Content-Type': 'text/plain'});
-        resp.end('Email Already Exists');
-      }
-    })
-    .catch(err => {
-      throw new Error(err)
-    });
-})
-
-// == Uncomment and ping to add new moves to the database ==
-// app.get('/moves', (req, resp) => {
-//   checkForMoves(fetchMoves)
-//   resp.sendStatus(200);
-// });
-
-app.get('/user', (req, resp) => {
-  resp.end(JSON.stringify({
-    username: req.session.username,
-    loggedIn: req.session.loggedIn
-  }));
-})
-
-app.get('/logout', (req, resp) => {
-  req.session.destroy(err => {
-    if (err) throw err;
-    resp.redirect('/login');
-  });
-});
-
-
-/* =============================================================== */
 
 
 // a catch-all route for BrowserRouter - enables direct linking to this point.
