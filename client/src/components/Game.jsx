@@ -83,7 +83,7 @@ export default class Game extends Component {
         })
       },
       playerInitialized: (data) => {
-        console.log('********* (12) player init data on Game *********', data);
+        // console.log('********* (12) player init data on Game *********', data);
         this.setState({
           [data.player]: true,
           pokemon: data.pokemon
@@ -236,7 +236,6 @@ export default class Game extends Component {
             commandInput: ''
           }
         })
-        console.log('POKEMON!!!!!!', this.state.pokemon);
       },
       attack: () => {
         this.state.socket.emit('attack', {

@@ -13,13 +13,13 @@ which will be emitted from the socket connection within server/app.js
 
 
 const createPokemon = (pokemon) => {
-  console.log('(3) ********* reached create pokemon with 1st pokemon as ******', pokemon);
+  // console.log('(3) ********* reached create pokemon with 1st pokemon as ******', pokemon);
   let { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
 
   return new Promise((resolve, reject) => {
     createMoves(types)
     .then((moves) => {
-        console.log('************************ (6) BEFORE POKE TO ADD*****************');
+        // console.log('************************ (6) BEFORE POKE TO ADD*****************');
 
           var random = (factor) => {
             return Math.ceil(Math.random() * factor)
@@ -48,7 +48,7 @@ const createPokemon = (pokemon) => {
             moves: finalMoves
           }
 
-          console.log('(7) ********* created pokemon with moves as ******', pokeToAdd);
+          // console.log('(7) ********* created pokemon with moves as ******', pokeToAdd);
 
           resolve(pokeToAdd);
     })
@@ -66,7 +66,7 @@ const createMoves = (types) => {
         }
       })
       .then(movesToAdd => {
-        console.log('(5) ********* found moves of that type from the db with ******', movesToAdd);
+        // console.log('(5) ********* found moves of that type from the db with ******', movesToAdd);
         let output = [];
         
         movesToAdd.forEach((moveObj) => {
@@ -81,7 +81,7 @@ const createMoves = (types) => {
 }
 
 const createPlayer = (player, number) => {
-  console.log('(1) ********* reached create player ******');
+  // console.log('(1) ********* reached create player ******');
   const random = () => {
     return Math.ceil(Math.random() * 150)
   }
@@ -92,16 +92,16 @@ const createPlayer = (player, number) => {
     }
     Promise.all(pokemonCalls)
     .then(results => {
-      console.log('(2) ********* fetched 3 pokemon with ******', pokemonCalls);
+      // console.log('(2) ********* fetched 3 pokemon with ******', pokemonCalls);
       let pokemon = []
       results.forEach(result => {
         pokemon.push(createPokemon(result))
-          console.log('(8) **************POKEMON ARR IS**********', pokemon);
+          // console.log('(8) **************POKEMON ARR IS**********', pokemon);
       })
 
       Promise.all(pokemon)
       .then((pokemon) => {
-        console.log('(9) ********* new pokemon with moves array is now ******', pokemon);
+        // console.log('(9) ********* new pokemon with moves array is now ******', pokemon);
       
         let userCreated = {
             player: number,
@@ -109,7 +109,7 @@ const createPlayer = (player, number) => {
             pokemon
         }
 
-        console.log('(10) ********* new user with pokemon is now ******', userCreated);
+        // console.log('(10) ********* new user with pokemon is now ******', userCreated);
         resolve(userCreated);
       })
     })
