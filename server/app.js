@@ -260,6 +260,7 @@ io.on('connection', (socket) => {
     const game = games[data.gameid];
     const player = game.playerTurn;
     const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1'
+    //***TODO*** use moveDamageCalculation (p1, p2, move) instead
     const turnResults = damageCalculation(game[player], game[opponent]);
     game[opponent].pokemon[0].health -= turnResults.damageToBeDone;
     const turnlog = createTurnlog(game, turnResults, 'attack');

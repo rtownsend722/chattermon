@@ -81,6 +81,7 @@ const checkForMoves = (callback) => {
     })
 }
 
+
 const fetchMoves = (moveNumber, callback) => {
   let arrayOfRequests = [];
 

@@ -25,8 +25,6 @@ const createPokemon = (pokemon) => {
   }
 }
 
-
-
 const createPlayer = (player, number) => {
   const random = () => {
     return Math.ceil(Math.random() * 150)
@@ -52,6 +50,8 @@ const createPlayer = (player, number) => {
     .catch(err => reject(err));  
   })
 }
+
+//***TODO*** createMoves function
 
 const createTurnlog = (game, turn, type) => {
   const player = game.playerTurn;
