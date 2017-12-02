@@ -91,23 +91,24 @@ Users.sync();
 Pokemon.sync();
 Move.sync();
 
-const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype, wins) =>  {
-  return Users
-    .findOne({ where: { username } })
-    .then(userFound => {
-      if (userFound) return 'Username Already Exists';
-      else return Users
-        .findOne({ where: { email } })
-    })
-    .then(userFoundOrUsernameExists => {
-      if (userFoundOrUsernameExists) {
-        return userFoundOrUsernameExists === 'Username Already Exists'  ? 
-        'Username Already Exists':
-        'Email Already Exists';
-      }
-      else return Users.create({ username, password, email, facebookid:0, avatarurl:'', skinid:'', usertype:'', pokemons:[], wins:0 });
-    })
-};
+
+// const saveUser = (username, password, email, facebookid, avatarurl, skinid, usertype, wins) =>  {
+//   return Users
+//     .findOne({ where: { username } })
+//     .then(userFound => {
+//       if (userFound) return 'Username Already Exists';
+//       else return Users
+//         .findOne({ where: { email } })
+//     })
+//     .then(userFoundOrUsernameExists => {
+//       if (userFoundOrUsernameExists) {
+//         return userFoundOrUsernameExists === 'Username Already Exists'  ? 
+//         'Username Already Exists':
+//         'Email Already Exists';
+//       }
+//       else return Users.create({ username, password, email, facebookid:0, avatarurl:'', skinid:'', usertype:'', pokemons:[], wins:0 });
+//     })
+// };
 
 
 const savePokemon = (pokemonObj) => {
@@ -143,7 +144,7 @@ const saveMove = (moveObj) => {
 
 module.exports = {
   connection: sequelize,
-  saveUser: saveUser,
+  // saveUser: saveUser,
   Users: Users,
   Pokemon: Pokemon,
   Move: Move,

@@ -162,6 +162,7 @@ export default class Game extends Component {
   componentDidMount() {
     axios('/user')
       .then(({ data }) => {
+        console.log('IN CDM: ', data);
         if (data.username) {
           const username = data.username;
           var socket = io();
