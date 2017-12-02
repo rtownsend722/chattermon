@@ -8,8 +8,8 @@ const db = require('../database/db.js');
 const bodyParser = require('body-parser');
 const Promise = require('bluebird');
 
-const bcrypt = Promise.promisifyAll(require('bcrypt'));
-
+const bcrypt = require('bcrypt');
+// const bcrypt = Promise.promisifyAll(require('bcrypt'));
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
@@ -31,7 +31,11 @@ app.use(bodyParser.urlencoded({ extended: false}));
 app.use(cookieParser());
 app.use(express.static(dist));
 
-app.use(session({ secret: 'supersecret' }));
+app.use(session({ 
+  secret: 'supersecret' ,
+  resave: false,
+  saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -59,10 +63,10 @@ if (process.env.NODE_ENV !== 'production') {
 
 //============SESSION SETUP=============//
 // Peer into passport session
-app.use(function printSession(req, res, next) {
-  console.log('req session', req.session);
-  return next();
-});
+// app.use(function printSession(req, res, next) {
+//   console.log('req session', req.session);
+//   return next();
+// });
 
   // Determines data of user object to be stored in session
   // Looks like: req.session.passport.user = {username: 'username'}
@@ -144,6 +148,9 @@ passport.use('local-login', new LocalStrategy({
   passReqToCallback: true
 },
 function(req, username, password, done) {
+  let isValidPassword = function(userpass, password) {
+    return bcrypt.compareSync(userpass, password);
+  }
   db.Users.findOne({
     where: {
       username: req.body.username
@@ -151,26 +158,17 @@ function(req, username, password, done) {
   })
   .then(foundUser => {
     if (!foundUser) {
-      alert('User doesn\'t exist!');
       done(null, false);
       return;
-    } else {
-      let hash = foundUser.dataValues.password;
-      return {
-        match: bcrypt.compare(password, hash),
-        user: foundUser
-      }
     }
-  })
-  .then(userInfo => {
-    if (!userInfo.match) {
-      alert('Password doesn\'t match!');
+    if (!isValidPassword(foundUser.password, password)) {
+      console.log('invalid password');
       done(null, false);
       return;
-    } else {
-      console.log('logged in user. userInfo: ', userInfo.user);
-      done(null, userInfo.user);
     }
+    console.log('valid pw');
+    console.log(isValidPassword(foundUser.password, password));
+    done(null, foundUser);
   })
   .catch(err => {
     console.log('ERROR verifying record: ', err);
@@ -216,7 +214,7 @@ passport.use(new FacebookStrategy({
 // }));
 
 app.post('/login',
-  passport.authenticate('local-login', {failureRedirect: '/login'}),
+  passport.authenticate('local-login', {failureRedirect: '/'}),
   function(req, resp) {
     console.log('IN REDIRECT WITH REQ/RESP');
     req.session.loggedIn = true;
@@ -240,7 +238,6 @@ app.get('/login/facebook/return',
     failureRedirect: '/login'})
   );
 
-//not sure about this
 app.get('/user', (req, resp) => {
   console.log('in app get user');
   console.log('SESSION:',req.session);
@@ -251,11 +248,11 @@ app.get('/user', (req, resp) => {
   }));
 })
 
-app.get('/logout', (req, res) => {
+app.get('/logout', (req, resp) => {
   req.session.destroy(err => {
     if (err) throw err;
-    res.redirect('/login');
-  });
+    resp.redirect('/login');
+  })
 });
 
 function isLoggedIn(req, res, next) {
@@ -541,14 +538,14 @@ io.on('connection', (socket) => {
 
     const winner = game[opponent].name;
 
-    db.Users.findOne({
+    db.findOne({
       where: {
           username: winner
         }
       })
       .then(founduser => {
         // console.log('FOUND USER: ', founduser);
-        db.Users.update(
+        db.update(
           {wins: founduser.wins + 1}, 
           {where: {username: founduser.username}}, 
         {
