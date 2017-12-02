@@ -42,7 +42,7 @@ xdescribe('Pokemon in the database', function() {
   });
 })
 
-describe('An instance of a pokemon', function() {
+xdescribe('An instance of a pokemon', function() {
   it('should send data back to the client in the right shape.', function(done) {
     let bulbasaur = {
       name: 'bulbasaur',

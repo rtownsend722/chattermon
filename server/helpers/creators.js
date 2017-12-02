@@ -13,7 +13,8 @@ which will be emitted from the socket connection within server/app.js
 
 
 const createPokemon = (pokemon) => {
-  const { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon; 
+  const { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
+
   return {
     name,
     health: baseHealth,
@@ -21,8 +22,27 @@ const createPokemon = (pokemon) => {
     attack: baseAttack,
     defense: baseDefense,
     sprites: {front_default: frontSprite, back_default: backSprite},
-    types
+    types,
+    moves: createMoves(types)
   }
+}
+
+const createMoves = (types) => {
+  let primaryType = types[0];
+  let output = [];
+
+  db.Move.findAll({
+    where: {
+      type: primaryType
+    }
+  })
+  .then(movesToAdd => {
+    movesToAdd.forEach((moveObj) => {
+      output.push(moveObj);
+    })
+
+    return output;
+  })
 }
 
 const createPlayer = (player, number) => {
