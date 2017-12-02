@@ -226,11 +226,12 @@ const damageCalculation = (activePlayer, opponent) => {
   
 }
 
-//***TODO*** alternate moveDamageCalculation function
-//player info is taken from game state, move is a string taken from the db
-// const moveDamageCalculation = (activePlayer, opponent, move) => {
-//   const moveType = 
-// }
+const moveDamageCalculation = (activePlayer, opponent, move) => {
+  //move is an object with power, type, etc. props
+
+  //***TODO***
+  console.log('in move damage calculation');
+}
 
 
 module.exports = {

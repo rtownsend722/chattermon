@@ -16,7 +16,7 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 // const config = require('./config.js');
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
-const { damageCalculation } = require('../game-logic.js');
+const { damageCalculation, moveDamageCalculation } = require('../game-logic.js');
 const { fetchMoves, checkForMoves } = require('./helpers/pokeapi.js');
 const { saveMove } = require('../database/db.js');
 
@@ -300,7 +300,56 @@ io.on('connection', (socket) => {
   });
 
   socket.on('attack with move', (data) => {
-    //TODO: handler
+    const game = games[data.gameid];
+    const player = game.playerTurn;
+    const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1';
+    const move = data.move;
+    //***TODO*** use moveDamageCalculation (p1, p2, move) instead
+    const turnResults = moveDamageCalculation(game[player], game[opponent], move);
+    //***TODO***
+
+    game[opponent].pokemon[0].health -= turnResults.damageToBeDone;
+    const turnlog = createTurnlog(game, turnResults, 'attack');
+    io.to(data.gameid).emit('attack processed', {
+      basicAttackDialog: turnlog
+    })
+    if (
+      game[opponent].pokemon[0].health <= 0 && 
+      game[opponent].pokemon[1].health <= 0 && 
+      game[opponent].pokemon[2].health <= 0
+    ) {
+      game[opponent].pokemon[0].health = 0; 
+      io.to(data.gameid).emit('turn move', game);
+      io.to(data.gameid).emit('gameover', { name: game[player].name });
+      const winner = game[player].name;
+      db.Users.findOne({
+        where: {
+          username: winner
+        }
+      })
+      .then(founduser => {
+        console.log('FOUND USER: ', founduser);
+        db.Users.update(
+          {wins: founduser.wins + 1}, 
+          {where: {username: founduser.username}}, 
+        {
+          fields: ['wins']
+        })
+        .then(updateduser => {
+          console.log('UPDATED USER ', updateduser);
+        })
+        .catch(error => {
+        })
+      });
+
+    } else if (game[opponent].pokemon[0].health <= 0) {
+      game[opponent].pokemon[0].health = 0; 
+      game.playerTurn = opponent;
+      io.to(data.gameid).emit('turn move', game);    
+    } else {
+      game.playerTurn = opponent;
+      io.to(data.gameid).emit('turn move', game);
+    }
   })
 
   socket.on('switch', (data) => {
