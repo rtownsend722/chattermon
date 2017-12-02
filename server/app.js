@@ -503,6 +503,8 @@ io.on('connection', (socket) => {
     if (!(data.gameid in games)) {
       createPlayer(data, 'player1')
       .then(player1 => {
+        //*********this is being triggered before createPlayer is complete*********
+        console.log('******** (11) CREATED PLAYER WITH ********', player1);
         games[data.gameid] = {
           player1,
           player2: null,

@@ -178,7 +178,7 @@ const modifierCalculation = (attackerTypes, moveType, opponentTypes) => {
   if (Critical > 1) {
     logStatement += 'A critical hit! '
   }
-
+  
   if (attackerTypes.indexOf(moveType) !== -1) {
     STAB = 1.5; 
   }
@@ -228,9 +228,20 @@ const damageCalculation = (activePlayer, opponent) => {
 
 const moveDamageCalculation = (activePlayer, opponent, move) => {
   //move is an object with power, type, etc. props
-
   //***TODO***
   console.log('in move damage calculation');
+
+  const attackerTypes = activePlayer.pokemon[0].types;
+  const moveType = move.type;
+  const opponentTypes = opponent.pokemon[0].types;
+
+  let modifier = modifierCalculation(attackerTypes, moveType, opponentTypes);
+
+
+  // return {
+  //   damageToBeDone: move.power,
+  // }
+
 }
 
 
