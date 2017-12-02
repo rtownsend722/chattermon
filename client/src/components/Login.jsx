@@ -60,24 +60,11 @@ export default class Login extends Component {
         data: { username, password }
       })
       .then(resp => {
-        if (resp.data.match('Username Not Found')) {
-          console.log('Username Not Found');
-          this.setState({
-            usernameError: true
-          });
-        }
-        else if (resp.data.match('Passwords Do Not Match')) {
-          console.log('Passwords Do Not Match');
-          this.setState({
-            passwordError: true
-          });
-        }
-        else {
-          console.log("user found");
-          this.setState({
-            registered: true
-          });
-        }
+        console.log(resp);
+        console.log("user found");
+        this.setState({
+          registered: true
+        });
       })
   }
 

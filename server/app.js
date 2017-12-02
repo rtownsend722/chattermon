@@ -11,6 +11,7 @@ const Promise = require('bluebird');
 const bcrypt = require('bcrypt');
 // const bcrypt = Promise.promisifyAll(require('bcrypt'));
 const passport = require('passport');
+const flash = require('connect-flash');
 const LocalStrategy = require('passport-local').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 
@@ -38,6 +39,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
 // require('./routes.js')(app, passport);
 
@@ -119,7 +121,7 @@ function(req, username, password, done) {
     .then(userFound => {
       if (userFound) {
         // alert('Username already exists');
-        done(null, false);
+        done(null, false, req.flash('signupMessage', 'This username already exists!'));
       } else {
         //may need to promisify in some weird way
         let hash = generateHash(password, salt)
@@ -162,14 +164,12 @@ function(req, username, password, done) {
   .then(foundUser => {
     console.log('FOUND USER')
     if (!foundUser) {
-      return done(null, false);
+      //FLASH
+      return done(null, false, req.flash('loginMessage', 'No user found.'));
     }
     if (!isValidPassword(password, foundUser.password)) {
-      console.log(password, foundUser.password);
-      console.log(generateHash(password, 10));
-      console.log(isValidPassword(foundUser.password, password));
-      console.log('invalid password');
-      return done(null, false);
+      //FLASH
+      return done(null, false, req.flash('loginMessage', 'Incorrect password. Try again!'));
     }
     console.log('valid pw');
     return done(null, foundUser);
@@ -194,7 +194,8 @@ passport.use(new FacebookStrategy({
       return db.Users.findOrCreate({
         where: {
           username: profile.displayName.split(' ')[0],
-          facebookid: profile.id
+          facebookid: profile.id,
+          wins: 0
         }
       })
       .spread((user, created) => {
@@ -213,17 +214,18 @@ passport.use(new FacebookStrategy({
 //   failureRedirect: '/login'
 // }));
 
+
 app.post('/login',
-  passport.authenticate('local-login', {failureRedirect: '/login'}),
+  passport.authenticate('local-login', {failureRedirect: '/login', failureFlash: true}),
   function(req, resp) {
-    console.log('IN REDIRECT WITH REQ/RESP');
     req.session.loggedIn = true;
     resp.redirect('/welcome');
   })
 
 app.post('/signup', passport.authenticate('local-signup', {
   successRedirect: '/welcome',
-  failureRedirect: '/signup'
+  failureRedirect: '/signup',
+  failureFlash: true
 }));
 
 // this route redirects user to FB for auth
@@ -240,10 +242,16 @@ app.get('/user', (req, resp) => {
   console.log('in app get user');
   console.log('SESSION:',req.session);
 
-  resp.end(JSON.stringify({
-    username: req.session.passport.user.username,
-    loggedIn: req.session.loggedIn
-  }));
+  if (req.session.passport === undefined) {
+    resp.redirect('/login');
+  } else {
+
+    resp.end(JSON.stringify({
+      username: req.session.passport.user.username,
+      loggedIn: req.session.loggedIn
+    }));
+  }
+
 })
 
 app.get('/logout', (req, resp) => {
