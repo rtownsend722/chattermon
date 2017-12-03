@@ -57,7 +57,7 @@ const createPokemon = (pokemon) => {
 
 const createMoves = (types) => {
   console.log('(4) ********* reached create moves ******');
-  let primaryType = types[0];
+  let primaryType = types[0] === 'fairy' ? 'normal' : types[0];
 
     return new Promise((resolve, reject) => {
       db.Move.findAll({
