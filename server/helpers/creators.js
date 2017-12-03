@@ -29,7 +29,10 @@ const createPokemon = (pokemon) => {
           var finalMoves = [];
           
           for(var i = 0; i < totalMoveNumber; i++){
-            finalMoves.push(moves[random(moves.length - 1)]);
+            var newMove = moves[random(moves.length - 1)];
+            if(!finalMoves.includes(newMove)) {
+              finalMoves.push(newMove);  
+            }
           }
 
           let { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
