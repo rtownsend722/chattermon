@@ -329,12 +329,19 @@ export default class Game extends Component {
           let moveObj = moveArr.filter((move) => {
             return move.name === value;
           })
-          console.log('move chosen is ', moveObj);
+
+          this.setState({
+            attacking: true
+          })
+
           setTimeout(() => this.commandHandlers().attackWithMove(moveObj), 300);  
         } else {
           alert('invalid input!')
         }
       }
+      this.setState({
+        commandInput: ''
+      });
     }
   }
 
