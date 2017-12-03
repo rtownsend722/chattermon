@@ -29,7 +29,10 @@ const createPokemon = (pokemon) => {
           var finalMoves = [];
           
           for(var i = 0; i < totalMoveNumber; i++){
-            finalMoves.push(moves[random(moves.length - 1)]);
+            var newMove = moves[random(moves.length - 1)];
+            if(!finalMoves.includes(newMove)) {
+              finalMoves.push(newMove);  
+            }
           }
 
           let { name, baseHealth, baseAttack, baseDefense, frontSprite, backSprite, types } = pokemon;
@@ -54,7 +57,7 @@ const createPokemon = (pokemon) => {
 
 const createMoves = (types) => {
   console.log('(4) ********* reached create moves ******');
-  let primaryType = types[0];
+  let primaryType = types[0] === 'fairy' ? 'normal' : types[0];
 
     return new Promise((resolve, reject) => {
       db.Move.findAll({
