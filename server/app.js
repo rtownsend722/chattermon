@@ -361,7 +361,7 @@ io.on('connection', (socket) => {
       })
       .then(founduser => {
         // console.log('FOUND USER: ', founduser);
-        db.update(
+        db.Users.update(
           {wins: founduser.wins + 1}, 
           {where: {username: founduser.username}}, 
         {
@@ -530,7 +530,7 @@ app.get('/scores', (req, resp) => {
     order: [
       ['wins', 'DESC']
     ],
-    limit: 5
+    limit: 10
   })
   .then(foundusers => {
     console.log('found');
