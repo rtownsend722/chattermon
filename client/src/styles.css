@@ -169,7 +169,7 @@ body {
   border-radius: 5px;
 }
 
-.stats {
+.moves {
   font-family: 'Press Start 2P', cursive;
   background-color: rgb(249, 248, 218);
   color: rgb(117, 114, 104);
@@ -177,8 +177,7 @@ body {
   width: 33.333px;
   padding: 3.33px;
   margin: 3.33px;
-  border: 1.3333px solid rgb(41, 64, 14);
-  border-radius: 1.6667px;
+  position: center;
 }
 
 .navBar {

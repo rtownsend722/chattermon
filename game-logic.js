@@ -211,37 +211,35 @@ const modifierCalculation = (attackerTypes, moveType, opponentTypes) => {
 
 // again, hardcoding level 25
 // reference: https://bulbapedia.bulbagarden.net/wiki/Damage 
-const damageCalculation = (activePlayer, opponent) => {
-  
+const damageCalculation = (activePlayer, opponent, move) => {
   const attackerTypes = activePlayer.pokemon[0].types; 
-  let moveType = attackerTypes[0];
+  const moveType = attackerTypes[0];
   const opponentTypes = opponent.pokemon[0].types;
-  let modifier = modifierCalculation(attackerTypes, moveType, opponentTypes);
+  const modifier = modifierCalculation(attackerTypes, moveType, opponentTypes);
   const userAttackStat = activePlayer.pokemon[0].attack; 
   const opponentDefenseStat = opponent.pokemon[0].defense;
-  return {
-    damageToBeDone: Math.round((((12 * 60 * (userAttackStat / opponentDefenseStat)) / 50) + 2) * modifier.modifierDamage),
-    logStatement: modifier.logStatement
-  };
-  
-}
 
-const moveDamageCalculation = (activePlayer, opponent, move) => {
-  //move is an object with power, type, etc. props
-  //***TODO***
-  console.log('in move damage calculation');
+  if (!move || move === undefined) {
+    return {
+      damageToBeDone: Math.round((((12 * 60 * (userAttackStat / opponentDefenseStat)) / 50) + 2) * modifier.modifierDamage),
+      logStatement: modifier.logStatement
+    }
+  } else {
+    console.log('**********in move damage calculation with move**********', move);
 
-  const attackerTypes = activePlayer.pokemon[0].types;
-  const moveType = move.type;
-  const opponentTypes = opponent.pokemon[0].types;
+    let movePower = move[0].power;
 
-  let modifier = modifierCalculation(attackerTypes, moveType, opponentTypes);
+    if (movePower === null) {
+      let movePower = 10;
+    }
 
+    let moveMultiplier = movePower / 50;
 
-  // return {
-  //   damageToBeDone: move.power,
-  // }
-
+    return {
+      damageToBeDone: Math.round(((((12 * 60 * (userAttackStat / opponentDefenseStat)) / 50) + 2) * modifier.modifierDamage) * moveMultiplier),
+      logStatement: modifier.logStatement
+    }
+  }
 }
 
 

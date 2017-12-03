@@ -19,7 +19,7 @@ const session = require('express-session');
 
 const axios = require('axios');
 const { createPokemon, createTurnlog, createPlayer } = require('./helpers/creators.js'); 
-const { damageCalculation, moveDamageCalculation } = require('../game-logic.js');
+const { damageCalculation } = require('../game-logic.js');
 const { fetchMoves, checkForMoves } = require('./helpers/pokeapi.js');
 const { saveMove } = require('../database/db.js');
 
@@ -458,9 +458,8 @@ io.on('connection', (socket) => {
     const player = game.playerTurn;
     const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1';
     const move = data.move;
-    //***TODO*** use moveDamageCalculation (p1, p2, move) instead
-    const turnResults = moveDamageCalculation(game[player], game[opponent], move);
-    //***TODO***
+
+    const turnResults = damageCalculation(game[player], game[opponent], move);
 
     game[opponent].pokemon[0].health -= turnResults.damageToBeDone;
     const turnlog = createTurnlog(game, turnResults, 'attack');

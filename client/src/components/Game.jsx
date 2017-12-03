@@ -244,7 +244,7 @@ export default class Game extends Component {
           pokemon: this.state.pokemon
         });
         this.setState({
-            attacking: false
+          attacking: false
         });
       },
       attackWithMove: (move) => {
@@ -255,7 +255,7 @@ export default class Game extends Component {
           move: move
         });
         this.setState({
-            attacking: false
+          attacking: false
         });
       },
       choose: (pokemonToSwap) => {
@@ -294,6 +294,7 @@ export default class Game extends Component {
 
   handleCommands(e) {
     if (e.keyCode !== 13) return;
+
     let value = e.target.value.toLowerCase(); 
 
     if (value === 'help') {
@@ -303,8 +304,7 @@ export default class Game extends Component {
     if (!this.state.isActive) {
       alert('it is not your turn!');
 
-    }
-     else {
+    } else {
       if (value === 'flee') {
         this.commandHandlers().flee();
       } else if (value === 'attack') {
@@ -319,26 +319,48 @@ export default class Game extends Component {
         }
       } else if (value.split(' ')[0] === "choose") {
         this.commandHandlers().choose(value.split(' ')[1]); 
-      //check to see if move typed in the terminal exists on the active pokemon
-      } else if (this.state.pokemon[0].moves._filter((currMove) => {return currMove.name === value}) !== undefined) {
-        //attacking state determines if front or back sprite is rendered on GameView component
-        this.setState({
-          attacking: true
-        })
-
-        let move = this.state.pokemon[0].moves._filter((currMove) => {return currMove.name === value})
-
-        setTimeout(() => this.commandHandlers().attackWithMove(move), 300); 
       } else {
-        alert('invalid input!')
+        let moveArr = this.state.pokemon[0].moves;
+        let moveNames = [];
+        moveArr.forEach((moveObj) => {
+          moveNames.push(moveObj.name);
+        })
+        if (moveNames.includes(value)) {
+          let moveObj = moveArr.filter((move) => {
+            return move.name === value;
+          })
+          console.log('move chosen is ', moveObj);
+          setTimeout(() => this.commandHandlers().attackWithMove(moveObj), 300);  
+        } else {
+          alert('invalid input!')
+        }
       }
     }
-
-    this.setState({
-      commandInput: ''
-    });
-  
   }
+
+
+
+
+
+
+    //   if (this.state.pokemon[0].moves._filter((currMove) => {return currMove.name === value}) !== undefined) {
+    //     //attacking state determines if front or back sprite is rendered on GameView component
+    //     this.setState({
+    //       attacking: true
+    //     })
+
+    //     let move = this.state.pokemon[0].moves._filter((currMove) => {return currMove.name === value})
+
+    //     setTimeout(() => this.commandHandlers().attackWithMove(move), 300); 
+    //   } else {
+    //     alert('invalid input!')
+    //   }
+    // }
+
+    // this.setState({
+    //   commandInput: ''
+    // });
+  
 
   renderGame() {
     const { pokemon, opponent, winner, loser, name, attacking } = this.state;
