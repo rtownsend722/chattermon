@@ -141,7 +141,7 @@ export default class Game extends Component {
           isActive: false
         }); 
 
-        setTimeout(() => this.props.history.replace("/"), 20000); 
+        setTimeout(() => this.props.history.replace("/scoreboard"), 5000); 
       },
 
       forfeit: (data) => {
@@ -155,7 +155,7 @@ export default class Game extends Component {
           forfeited: true
         });
 
-        setTimeout(() => this.props.history.replace("/"), 20000); 
+        setTimeout(() => this.props.history.replace("/scoreboard"), 5000); 
       }
     }
   }
@@ -290,8 +290,6 @@ export default class Game extends Component {
     }
   }
 
-
-
   handleCommands(e) {
     if (e.keyCode !== 13) return;
 
@@ -391,7 +389,6 @@ export default class Game extends Component {
       <div className={css.stateContainer}>
         <Logo name={this.state.name} isActive={this.state.isActive} opponent={this.state.opponent} />
         <GameState pokemon={this.state.pokemon} />
-        <Scoreboard/>
         <Chat messageArray={this.state.messageArray} chatInput={this.state.chatInput} handleChatInputSubmit={this.handleChatInputSubmit} handleInputChange={this.handleInputChange} handleTyping={this.socketHandlers().handleTyping.bind(this)} opponentTyping={this.state.opponentTyping} /> 
       </div>
     );
