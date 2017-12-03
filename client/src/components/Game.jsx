@@ -141,7 +141,7 @@ export default class Game extends Component {
           isActive: false
         }); 
 
-        setTimeout(() => this.props.history.replace("/"), 20000); 
+        setTimeout(() => this.props.history.replace("/scoreboard"), 10000); 
       },
 
       forfeit: (data) => {
@@ -155,7 +155,7 @@ export default class Game extends Component {
           forfeited: true
         });
 
-        setTimeout(() => this.props.history.replace("/"), 20000); 
+        setTimeout(() => this.props.history.replace("/scoreboard"), 10000); 
       }
     }
   }
@@ -289,8 +289,6 @@ export default class Game extends Component {
       }
     }
   }
-
-
 
   handleCommands(e) {
     if (e.keyCode !== 13) return;

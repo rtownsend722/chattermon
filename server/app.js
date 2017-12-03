@@ -354,7 +354,7 @@ io.on('connection', (socket) => {
 
     const winner = game[opponent].name;
 
-    db.findOne({
+    db.Users.findOne({
       where: {
           username: winner
         }
