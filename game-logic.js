@@ -228,15 +228,25 @@ const damageCalculation = (activePlayer, opponent, move) => {
     console.log('**********in move damage calculation with move**********', move);
 
     let movePower = move[0].power;
+    let moveAccuracy = move[0].accuracy;
 
     if (movePower === null) {
       let movePower = 10;
     }
 
+    if (moveAccuracy === null) {
+      moveAccuracy = 100;
+    }
+
     let moveMultiplier = movePower / 50;
 
+    // accuracy: pokemon misses if random number for this turn is outside the bounds of the move's accuracy
+    let randomNumber = Math.ceil(Math.random() * 100);
+    let miss = randomNumber > moveAccuracy;
+    console.log('RANDOM CHANCE', randomNumber);
+
     return {
-      damageToBeDone: Math.round(((((12 * 60 * (userAttackStat / opponentDefenseStat)) / 50) + 2) * modifier.modifierDamage) * moveMultiplier),
+      damageToBeDone: miss ? 0 : Math.round(((((12 * 60 * (userAttackStat / opponentDefenseStat)) / 50) + 2) * modifier.modifierDamage) * moveMultiplier),
       logStatement: modifier.logStatement
     }
   }

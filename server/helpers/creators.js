@@ -120,13 +120,32 @@ const createTurnlog = (game, turn, type) => {
   const player = game.playerTurn;
   const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1'
   if (type === 'attack') {
-    let turnlog = [{command: `${game[player].pokemon[0].name} attacked!`}];
-    turn.logStatement !== '' ? turnlog.push({command: turn.logStatement}) : null;
-    turnlog.push({command: `${game[opponent].pokemon[0].name} lost ${turn.damageToBeDone} HP`});
-    if (game[opponent].pokemon[0].health <= 0) {
-      turnlog.push({command: `${game[opponent].pokemon[0].name} has fainted!`}); 
+    if (turn.damageToBeDone === 0) {
+      let turnlog = [{command: `${game[player].pokemon[0].name} missed!`}];
+      turnlog.push({command: `${game[opponent].pokemon[0].name} lost ${turn.damageToBeDone} HP`});
+
+      if (game[opponent].pokemon[0].health <= 0) {
+        turnlog.push({command: `${game[opponent].pokemon[0].name} has fainted!`}); 
+      }
+      console
+      return turnlog;
+    } else {
+      let turnlog = [{command: `${game[player].pokemon[0].name} attacked!`}];
+      turn.logStatement !== '' ? turnlog.push({command: turn.logStatement}) : null;
+      //ensure a pokemon cannot lose more HP than it currently has
+      // console.log('1st damage ', turn.damageToBeDone) 
+      // if (turn.damageToBeDone > game[opponent].pokemon[0].health) {
+      //   turn.damageToBeDone = game[opponent].pokemon[0].health;
+      // }
+      // console.log('AMENDED damage ', turn.damageToBeDone) 
+      turnlog.push({command: `${game[opponent].pokemon[0].name} lost ${turn.damageToBeDone} HP`});
+
+      if (game[opponent].pokemon[0].health <= 0) {
+        turnlog.push({command: `${game[opponent].pokemon[0].name} has fainted!`}); 
+      }
+
+      return turnlog;
     }
-    return turnlog;
   } else if (type === 'switch') {
     let turnlog = [{command: `${game[player].pokemon[0].name} appears!`}];
     return turnlog; 

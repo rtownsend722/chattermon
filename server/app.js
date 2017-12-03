@@ -405,7 +405,6 @@ io.on('connection', (socket) => {
     const game = games[data.gameid];
     const player = game.playerTurn;
     const opponent = game.playerTurn === 'player1' ? 'player2' : 'player1'
-    //***TODO*** use moveDamageCalculation (p1, p2, move) instead
     const turnResults = damageCalculation(game[player], game[opponent]);
     game[opponent].pokemon[0].health -= turnResults.damageToBeDone;
     const turnlog = createTurnlog(game, turnResults, 'attack');
@@ -429,7 +428,6 @@ io.on('connection', (socket) => {
         }
       })
       .then(founduser => {
-        // console.log('FOUND USER: ', founduser);
         db.Users.update(
           {wins: founduser.wins + 1}, 
           {where: {username: founduser.username}}, 
@@ -437,7 +435,7 @@ io.on('connection', (socket) => {
           fields: ['wins']
         })
         .then(updateduser => {
-          // console.log('UPDATED USER ', updateduser);
+          console.log('UPDATED USER ', updateduser);
         })
         .catch(error => {
         })
