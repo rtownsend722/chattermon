@@ -1,7 +1,8 @@
 const Sequelize = require('sequelize');
+
 // const config = require('../server/config.js');
 const rgx = new RegExp(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-const match = process.env.HEROKU_POSTGRESQL_COBALT_URL ? process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) : config.databaseURL.match(rgx);
+const match = process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) || config.databaseURL.match(rgx);
 
 console.log('dbname ', match[5]);
 console.log('user ', match[1]);

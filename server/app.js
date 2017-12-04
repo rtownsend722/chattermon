@@ -183,9 +183,9 @@ function(req, username, password, done) {
 
 
 passport.use(new FacebookStrategy({
-  clientID: process.ENV.CLIENT_ID || config.facebookAuth.clientID,
-  clientSecret: process.ENV.CLIENT_SECRET || config.facebookAuth.clientSecret,
-  callbackURL: process.ENV.CALLBACK_URL_STAGING || process.ENV.FACEBOOK_CALLBACK_URL || 'http://localhost:3000/login/facebook/return'
+  clientID: process.env.CLIENT_ID || config.facebookAuth.clientID,
+  clientSecret: process.env.CLIENT_SECRET || config.facebookAuth.clientSecret,
+  callbackURL: process.env.CALLBACK_URL_STAGING || process.env.FACEBOOK_CALLBACK_URL || 'http://localhost:3000/login/facebook/return'
 },
   function(accessToken, refreshToken, profile, done) {
     process.nextTick(function() {
