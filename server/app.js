@@ -180,12 +180,17 @@ function(req, username, password, done) {
 
 
 //============LOCAL LOGIN=============//
-
+var cbURL;
+if (process.env.PORT) {
+  cbURL = process.env.FACEBOOK_CALLBACK_URL;
+} else {
+  cbURL = 'http://localhost:3000/login/facebook/return'
+}
 
 passport.use(new FacebookStrategy({
-  clientID: process.env.CLIENT_ID || config.facebookAuth.clientID,
-  clientSecret: process.env.CLIENT_SECRET || config.facebookAuth.clientSecret,
-  callbackURL: process.env.CALLBACK_URL_STAGING || process.env.FACEBOOK_CALLBACK_URL || 'http://localhost:3000/login/facebook/return'
+  clientID: '230138997524272',
+  clientSecret: 'c043a4dd8b23783b4a6bbe3bcfcb3672',
+  callbackURL: cbURL
 },
   function(accessToken, refreshToken, profile, done) {
     process.nextTick(function() {

@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 
 // const config = require('../server/config.js');
 const rgx = new RegExp(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-const match = process.env.HEROKU_POSTGRESQL_COBALT_URL.match(rgx) || config.databaseURL.match(rgx);
+const match = 'postgres://kqjhzdmigbxlqb:1a58e5a4649b4085c130ad53fecf9030663afc2e1f76509f7f66ef77784189df@ec2-54-235-210-115.compute-1.amazonaws.com:5432/demruaiple0ldm'.match(rgx);
 
 console.log('dbname ', match[5]);
 console.log('user ', match[1]);
