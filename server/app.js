@@ -182,7 +182,7 @@ function(req, username, password, done) {
 //============LOCAL LOGIN=============//
 var cbURL;
 if (process.env.PORT) {
-  cbURL = process.env.FACEBOOK_CALLBACK_URL;
+  cbURL = 'https://chattermonv2.herokuapp.com/login/facebook/return';
 } else {
   cbURL = 'http://localhost:3000/login/facebook/return'
 }
